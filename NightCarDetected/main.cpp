@@ -67,9 +67,6 @@ int thresholdValue(Mat& src)
 	int sumOfGrayLevel = 0;
 	int NumberOfPixel = src.rows*src.cols;
 
-	//cout << src.rows << " " << src.cols << endl;
-	//cout << NumberOfPixel << endl;
-
 	for (int i = 0; i < 256; i++)
 	{
 		grayLevel[i] = 0;
@@ -82,12 +79,6 @@ int thresholdValue(Mat& src)
 			grayLevel[int(src.at<uchar>(row, col))]++;	
 		}
 	}
-
-	//for (int i = 0; i < 256; i++){
-	//	cout << i << " = " << grayLevel[i] << endl;
-
-	//}
-
 
 	for (int i = 0; i < 256; i++)
 	{
@@ -107,8 +98,7 @@ int main() {
 	Mat src;
 	Mat leftSrc, rightSrc;
 	Mat leftROI, rightROI, rightROITemp;
-	Mat leftGrey, rightGrey;
-	Mat leftHist, rightHist;
+	Mat leftGrey, rightGrey;	
 	string path = "C://Users//¹ù«a³Í//Desktop//NightVehicleDetection//NightVehicleDetection//AV1-20170510_213352.avi";
 	//string path = "C://Users//¹ù«a³Í//Desktop//allvideos//car1.avi";
 
@@ -118,8 +108,7 @@ int main() {
 		return -1;
 	}
 
-	Size videoSize = Size((int)capture.get(CV_CAP_PROP_FRAME_WIDTH), (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT));
-	//namedWindow("src", CV_WINDOW_AUTOSIZE);
+	Size videoSize = Size((int)capture.get(CV_CAP_PROP_FRAME_WIDTH), (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT));	
 
 	while (true) {
 		capture >> src;
@@ -132,10 +121,7 @@ int main() {
 		Rect ROI = Rect(100, rightGrey.rows / 7 * 2, rightGrey.cols / 7 * 6, rightGrey.rows / 4 * 2);				
 		rightROITemp = rightGrey(ROI);
 		rightROI=rightROITemp.clone();
-
-
-		//cout << thresholdValue(rightROI) << endl;
-		
+				
 		ThresholdValue = thresholdValue(rightROI);
 		if (previousThresholdValue == NULL)
 		{
