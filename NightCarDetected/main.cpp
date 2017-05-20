@@ -10,7 +10,7 @@
 using namespace std;
 using namespace cv;
 
-int previousThresholdValue = 0;
+int previousThresholdValue = NULL;
 /*void removeNoice(Mat binaryImg) {
 Mat erodeStruct = getStructuringElement(MORPH_RECT, Size(5, 5));
 erode(binaryImg, binaryImg, erodeStruct);
@@ -24,14 +24,14 @@ struct ObjectDetected {
 
 vector<ObjectDetected> ObjectDetectedVector;
 
-void detectLight(Mat srcImg, Mat binaryImg, int offsetX, int offsetY,Rect region) {
+void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offsetY, Rect region) {
 
 	Mat labelImg, stats, centroids;
 	int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
 	ObjectDetectedVector.clear();
 	//std::vector<cv::Vec3b> colors(nLabels);
 	//colors[0] = cv::Vec3b(0, 0, 0);
-	
+
 	for (int label = 1; label < nLabels; ++label)
 	{
 		int width = stats.at<int>(label, CC_STAT_WIDTH);
@@ -41,30 +41,71 @@ void detectLight(Mat srcImg, Mat binaryImg, int offsetX, int offsetY,Rect region
 		int left = stats.at<int>(label, CC_STAT_LEFT) + offsetX;
 		int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
-		
+
 		if (area > 50)
 		{
-			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
-			ObjectDetectedVector.push_back(objectDetected);
+			if (ObjectDetectedVector.size() == 0)
+			{
+				ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
+				ObjectDetectedVector.push_back(objectDetected);
+			}
+			else if (ObjectDetectedVector.size() > 0)
+			{
+				bool isReflection = false;
+				for (int i = 0; i < ObjectDetectedVector.size(); i++)
+				{
+					if ((abs(ObjectDetectedVector[i].centroid.y - centroid.y) >= 10) ||
+						(abs(ObjectDetectedVector[i].centroid.x - centroid.x) < 5))
+						{
+							cout << "111111" << endl;
+							Mat lightObject = rightGray(Rect(left, top, width, height));
+							int sumOfGreyIntensity = 0;
+							int sumOfGreyIntensityOfVariance = 0;
+							double mean = 0;
+							double variance = 0;
+							for (int row = 0; row < lightObject.rows; row++)
+							{
+								for (int col = 0; col < lightObject.cols; col++)
+								{
+									sumOfGreyIntensity += lightObject.at<uchar>(row, col);
+									sumOfGreyIntensityOfVariance += (lightObject.at<uchar>(row, col) * lightObject.at<uchar>(row, col));
+								}
+							}
+							mean = sumOfGreyIntensity / (lightObject.rows + lightObject.cols);
+							variance = (sumOfGreyIntensityOfVariance / (lightObject.rows + lightObject.cols)) - (mean * mean);
+							cout << "mean : " << mean << endl;
+							cout << "vari{ance : " << variance << endl;
+							
+							if (mean < 1100 || variance > -7e05) //variance not calibrate
+								isReflection = true;
+						}
+				}
+
+				if (!isReflection)
+				{
+					ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
+					ObjectDetectedVector.push_back(objectDetected);
+				}
+			}
 		}
 
 		//line(srcImg, centroid, centroid, Scalar(255, 255, 255), 5, 8, 0);
 		//rectangle(srcImg, Rect(left, top, width, height), Scalar(0, 170, 255), 2);	
-	}	
-
-	for (int i = 0; i<ObjectDetectedVector.size(); i++)
+	}
+	
+	for (int i = 0; i < ObjectDetectedVector.size(); i++)
 	{
 		rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 170, 255), 2);
-		for (int j = 0; j<ObjectDetectedVector.size(); j++)
+		for (int j = 0; j < ObjectDetectedVector.size(); j++)
 		{
-			if ((i != j)&&(ObjectDetectedVector[i].isMatched==false) && (ObjectDetectedVector[j].isMatched == false))
-			{			
+			if ((i != j) && (ObjectDetectedVector[i].isMatched == false) && (ObjectDetectedVector[j].isMatched == false))
+			{
 				//i is on left and j is on right
 				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) && 
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x > 0) && 
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 3)))
-				{		
+				{
 					ObjectDetectedVector[i].isMatched = true;
 					ObjectDetectedVector[j].isMatched = true;
 					//int top = (ObjectDetectedVector[j].region.y + ObjectDetectedVector[i].region.y) / 2;					
@@ -196,7 +237,7 @@ int main() {
 	}
 
 	Size videoSize = Size((int)capture.get(CV_CAP_PROP_FRAME_WIDTH), (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT));
-
+	capture.set(CV_CAP_PROP_POS_FRAMES, 0);
 	while (true)
 	{
 		capture >> src;
@@ -217,7 +258,7 @@ int main() {
 		rightDst = removeNoiseAndThreshold(rightGray, rightRect);
 
 
-		detectLight(rightSrc, rightDst, 0, rightGray.rows / 32 * 9, right);
+		detectLight(rightSrc, rightGray, rightDst, 0, rightGray.rows / 32 * 9, right);
 
 
 
