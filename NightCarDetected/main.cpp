@@ -82,7 +82,8 @@ int thresholdValue(Mat& src)
 		sumOfGrayLevel += grayLevel[i];		
 		if (sumOfGrayLevel>NumberOfPixel*0.99)
 		{
-			cout << i << endl;
+			if(i<20)
+				return 255;			
 			return i;
 		}
 	}		
@@ -107,8 +108,16 @@ Mat detectLight(Mat src, Rect rect)
 	ThresholdValueAdjust = ThresholdValue*0.875 + previousThresholdValue*0.125;
 	threshold(ROI, ROI, ThresholdValueAdjust, 255, THRESH_BINARY); //OTSU is not necessary to set thres
 	previousThresholdValue = ThresholdValueAdjust;
+
 	erode(ROI, ROI, 2);
 	dilate(ROI, ROI, 3);
+
+	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(4, 3));
+	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
+	erode(ROI, ROI, kernalELLIPSE);
+	erode(ROI, ROI, kernalELLIPSE);
+	dilate(ROI, ROI,kernalCIRCLE);
+
 
 	//removeNoice(rightROI);
 	//detectLight(rightSrc, rightROI, 100, rightSrc.rows / 7 * 2);
