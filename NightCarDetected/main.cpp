@@ -10,7 +10,7 @@
 using namespace std;
 using namespace cv;
 
-int previousThresholdValue = NULL;
+int previousThresholdValue = 0;
 /*void removeNoice(Mat binaryImg) {
 Mat erodeStruct = getStructuringElement(MORPH_RECT, Size(5, 5));
 erode(binaryImg, binaryImg, erodeStruct);
@@ -22,11 +22,13 @@ struct ObjectDetected {
 	Point centroid;
 };
 
+vector<ObjectDetected> ObjectDetectedVector;
+
 void detectLight(Mat srcImg, Mat binaryImg, int offsetX, int offsetY,Rect region) {
 
 	Mat labelImg, stats, centroids;
 	int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
-	vector<ObjectDetected> ObjectDetectedVector;
+	ObjectDetectedVector.clear();
 	//std::vector<cv::Vec3b> colors(nLabels);
 	//colors[0] = cv::Vec3b(0, 0, 0);
 	
@@ -39,26 +41,37 @@ void detectLight(Mat srcImg, Mat binaryImg, int offsetX, int offsetY,Rect region
 		int left = stats.at<int>(label, CC_STAT_LEFT) + offsetX;
 		int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
-		ObjectDetected objectDetected{false,Rect(left,top,width,height),centroid };
-		ObjectDetectedVector.push_back(objectDetected);
+		
+		if (area > 50)
+		{
+			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
+			ObjectDetectedVector.push_back(objectDetected);
+		}
+
 		//line(srcImg, centroid, centroid, Scalar(255, 255, 255), 5, 8, 0);
-		//rectangle(srcImg, Rect(left, top, width, height), Scalar(255, 255, 255), 2);	
+		//rectangle(srcImg, Rect(left, top, width, height), Scalar(0, 170, 255), 2);	
 	}	
 
 	for (int i = 0; i<ObjectDetectedVector.size(); i++)
 	{
+		rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 170, 255), 2);
 		for (int j = 0; j<ObjectDetectedVector.size(); j++)
 		{
 			if ((i != j)&&(ObjectDetectedVector[i].isMatched==false) && (ObjectDetectedVector[j].isMatched == false))
 			{			
 				//i is on left and j is on right
-				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y)<10)&& (ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area())&&(ObjectDetectedVector[j].centroid.x- ObjectDetectedVector[i].centroid.x>0) && (ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x>0))
+				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) && 
+					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
+					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x > 0) && 
+					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 3)))
 				{		
 					ObjectDetectedVector[i].isMatched = true;
 					ObjectDetectedVector[j].isMatched = true;
-					int top = (ObjectDetectedVector[j].region.y + ObjectDetectedVector[i].region.y) / 2;					
-					Rect rect = Rect(ObjectDetectedVector[i].region.x, ObjectDetectedVector[i].region.y, ObjectDetectedVector[j].region.x- ObjectDetectedVector[i].region.x+ ObjectDetectedVector[i].region.width, ObjectDetectedVector[j].region.height);
-					rectangle(srcImg, rect, Scalar(255, 0, 0), 2);
+					//int top = (ObjectDetectedVector[j].region.y + ObjectDetectedVector[i].region.y) / 2;					
+					Rect rect = Rect(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width)- ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
+					rectangle(srcImg, rect, Scalar(0, 0, 255), 3);
+					//rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 255, 0), 2);
+					//rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(0, 255, 0), 2);
 					//rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 0, 0), 2);
 				}
 			}
@@ -105,7 +118,7 @@ int thresholdValue(Mat& src)
 		if (sumOfGrayLevel>NumberOfPixel*0.99)
 		{
 			if (i<20)
-				return 255;
+				return 20;
 			return i;
 		}
 	}
@@ -121,11 +134,32 @@ Mat removeNoiseAndThreshold(Mat src, Rect rect)
 	
 	int ThresholdValue = 0;
 	int ThresholdValueAdjust = 0;
-	ThresholdValue = thresholdValue(ROI);
-	if (previousThresholdValue == NULL)
+	double avgThresholdValueOfLight = 0;
+
+	//if (ObjectDetectedVector.size() == 0)
+	//{
+		ThresholdValue = thresholdValue(ROI);
+	//}
+	//else if (ObjectDetectedVector.size() > 0) 
+	//{
+	//	cout << "ObjectDetectedVector.size() : " << ObjectDetectedVector.size() << endl;
+	//	for (int i = 0; i < ObjectDetectedVector.size(); i++)
+	//	{
+	//		Mat lightObject = src(ObjectDetectedVector[i].region);
+	//		avgThresholdValueOfLight += thresholdValue(lightObject);
+	//	}
+
+	//	avgThresholdValueOfLight = avgThresholdValueOfLight / ObjectDetectedVector.size();
+	//}
+
+	//cout << "avgThresholdValueOfLight : " << avgThresholdValueOfLight << endl;
+	
+	if (previousThresholdValue == 0)
 	{
+		//ThresholdValue = ObjectDetectedVector.size() > 0 ? avgThresholdValueOfLight : ThresholdValue;
 		previousThresholdValue = ThresholdValue;
 	}
+
 	ThresholdValueAdjust = ThresholdValue*0.875 + previousThresholdValue*0.125;
 	threshold(ROI, ROI, ThresholdValueAdjust, 255, THRESH_BINARY); //OTSU is not necessary to set thres
 	previousThresholdValue = ThresholdValueAdjust;
@@ -152,7 +186,7 @@ int main() {
 	Mat rightDst, leftDst;
 	Mat leftGray, rightGray;
 
-	string path = "C://Users//User//Desktop//freeway_with_filter.mp4";
+	string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
 	
 
 	VideoCapture capture(path);
@@ -183,12 +217,12 @@ int main() {
 		rightDst = removeNoiseAndThreshold(rightGray, rightRect);
 
 
-		detectLight(rightGray, rightDst, 0, rightGray.rows / 32 * 9, right);
+		detectLight(rightSrc, rightDst, 0, rightGray.rows / 32 * 9, right);
 
 
 
-		rectangle(rightGray, rightRect, Scalar(255, 255, 255), 1, 8, 0);
-		imshow("Right Grey", rightGray);
+		rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
+		imshow("Right Result", rightSrc);
 		imshow("Right ROI", rightDst);
 
 		waitKey(1);
