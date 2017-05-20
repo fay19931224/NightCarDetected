@@ -10,51 +10,78 @@
 using namespace std;
 using namespace cv;
 
-int previousThresholdValue = 0;
-/*void removeNoice(Mat binaryImg) {
-Mat erodeStruct = getStructuringElement(MORPH_RECT, Size(5, 5));
-erode(binaryImg, binaryImg, erodeStruct);
-imshow("Erode", binaryImg);
-}*/
-struct ObjectDetected {
+
+
+struct ObjectDetected
+{
 	bool isMatched;
 	Rect region;
 	Point centroid;
 };
 
+int previousThresholdValue = 0;
 vector<ObjectDetected> ObjectDetectedVector;
 
-void detectLight(Mat srcImg, Mat binaryImg, int offsetX, int offsetY,Rect region) {
+void removeNoice(Mat &ROI)
+{
+	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(8, 6));
+	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(6, 6));
+	erode(ROI, ROI, kernalELLIPSE);
+	dilate(ROI, ROI, kernalCIRCLE);		
+}
 
+
+void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offsetY,Rect frontRegion)
+{
 	Mat labelImg, stats, centroids;
 	int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
-	ObjectDetectedVector.clear();
-	//std::vector<cv::Vec3b> colors(nLabels);
-	//colors[0] = cv::Vec3b(0, 0, 0);
-	
+	ObjectDetectedVector.clear();	
 	for (int label = 1; label < nLabels; ++label)
 	{
 		int width = stats.at<int>(label, CC_STAT_WIDTH);
 		int height = stats.at<int>(label, CC_STAT_HEIGHT);
-		int area = stats.at<int>(label, CC_STAT_AREA);
-		//colors[label] = cv::Vec3b((std::rand() & 255), (std::rand() & 255), (std::rand() & 255));
+		int area = stats.at<int>(label, CC_STAT_AREA);	
 		int left = stats.at<int>(label, CC_STAT_LEFT) + offsetX;
 		int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
 		
 		if (area > 50)
 		{
-			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
-			ObjectDetectedVector.push_back(objectDetected);
+			/*Mat lightObject = rightGray(Rect(left, top, width, height));
+			int sumOfGreyIntensity = 0;
+			int sumOfGreyIntensityOfVariance = 0;
+			double mean = 0;
+			double variance = 0;
+			for (int row = 0; row < lightObject.rows; row++)
+			{
+				for (int col = 0; col < lightObject.cols; col++)
+				{
+					sumOfGreyIntensity += lightObject.at<uchar>(row, col);
+					sumOfGreyIntensityOfVariance += (lightObject.at<uchar>(row, col) * lightObject.at<uchar>(row, col));
+				}
+			}
+			mean = sumOfGreyIntensity / (lightObject.rows + lightObject.cols);
+			variance = (sumOfGreyIntensityOfVariance / (lightObject.rows + lightObject.cols)) - (mean * mean);
+			cout << "mean : " << mean << endl;
+			cout << "variance : " << variance << endl;
+			if (mean > 500 && variance < -1e06)
+			{*/
+				ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
+				ObjectDetectedVector.push_back(objectDetected);
+			//}
+
 		}
 
-		//line(srcImg, centroid, centroid, Scalar(255, 255, 255), 5, 8, 0);
-		//rectangle(srcImg, Rect(left, top, width, height), Scalar(0, 170, 255), 2);	
 	}	
 
 	for (int i = 0; i<ObjectDetectedVector.size(); i++)
 	{
-		rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 170, 255), 2);
+		//determine isn't carlight from far position
+		if (frontRegion.contains(ObjectDetectedVector[i].centroid))
+		{
+			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 155, 255), 2);
+		}
+		
 		for (int j = 0; j<ObjectDetectedVector.size(); j++)
 		{
 			if ((i != j)&&(ObjectDetectedVector[i].isMatched==false) && (ObjectDetectedVector[j].isMatched == false))
@@ -66,30 +93,15 @@ void detectLight(Mat srcImg, Mat binaryImg, int offsetX, int offsetY,Rect region
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 3)))
 				{		
 					ObjectDetectedVector[i].isMatched = true;
-					ObjectDetectedVector[j].isMatched = true;
-					//int top = (ObjectDetectedVector[j].region.y + ObjectDetectedVector[i].region.y) / 2;					
+					ObjectDetectedVector[j].isMatched = true;					
 					Rect rect = Rect(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width)- ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
 					rectangle(srcImg, rect, Scalar(0, 0, 255), 3);
-					//rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 255, 0), 2);
-					//rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(0, 255, 0), 2);
-					//rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 0, 0), 2);
+					rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
+					rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);					
 				}
 			}
 		}
 	}
-
-
-
-	//show labeling color
-	/*Mat dst(binaryImg.size(), CV_8UC3);
-	for (int r = 0; r < dst.rows; ++r) {
-	for (int c = 0; c < dst.cols; ++c) {
-	int label = labelImg.at<int>(r, c);
-	Vec3b &pixel = dst.at<Vec3b>(r, c); //get the index of the pixel
-	pixel = colors[label]; //set new pixel
-	}
-	}*/
-	//imshow("Labeling", dst);
 }
 
 
@@ -115,10 +127,10 @@ int thresholdValue(Mat& src)
 	for (int i = 0; i < 256; i++)
 	{
 		sumOfGrayLevel += grayLevel[i];
-		if (sumOfGrayLevel>NumberOfPixel*0.99)
-		{
+		if (sumOfGrayLevel>NumberOfPixel*0.98)
+		{			
 			if (i<20)
-				return 20;
+				return 20;			
 			return i;
 		}
 	}
@@ -163,14 +175,9 @@ Mat removeNoiseAndThreshold(Mat src, Rect rect)
 	ThresholdValueAdjust = ThresholdValue*0.875 + previousThresholdValue*0.125;
 	threshold(ROI, ROI, ThresholdValueAdjust, 255, THRESH_BINARY); //OTSU is not necessary to set thres
 	previousThresholdValue = ThresholdValueAdjust;
-	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(8, 6));
-	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(6, 6));
-	erode(ROI, ROI, kernalELLIPSE);
+	
 
-	dilate(ROI, ROI, kernalCIRCLE);
-	//dilate(ROI, ROI, kernalCIRCLE);
-
-	//removeNoice(rightROI);
+	removeNoice(ROI);
 	//detectLight(rightSrc, rightROI, 100, rightSrc.rows / 7 * 2);
 
 	//imshow("Left Src", leftSrc);
@@ -186,7 +193,7 @@ int main() {
 	Mat rightDst, leftDst;
 	Mat leftGray, rightGray;
 
-	string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
+	string path = "E:\Dropbox/freeway_with_filter.mp4";
 	
 
 	VideoCapture capture(path);
@@ -198,7 +205,7 @@ int main() {
 	Size videoSize = Size((int)capture.get(CV_CAP_PROP_FRAME_WIDTH), (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT));
 
 	while (true)
-	{
+	{	
 		capture >> src;
 		if (src.empty()) {
 			break;
@@ -213,15 +220,15 @@ int main() {
 		Rect right = Rect(0, videoSize.height / 2, videoSize.width / 2, videoSize.height / 2);
 		rightSrc = src(right);
 		cvtColor(rightSrc, rightGray, CV_BGR2GRAY);
-		Rect rightRect = Rect(0, rightGray.rows / 32 * 9, rightGray.cols / 5 * 4, rightGray.rows / 5 * 2);
+		Rect rightRect = Rect(0, rightGray.rows / 32 * 9, rightGray.cols / 6 * 5, rightGray.rows / 5 * 2);
+		Rect rightFrontRect = Rect(rightRect.width- rightGray.cols / 24 * 2, rightGray.rows / 32 * 9, rightGray.cols / 24 * 2, rightGray.rows / 5 * 1);
 		rightDst = removeNoiseAndThreshold(rightGray, rightRect);
 
 
-		detectLight(rightSrc, rightDst, 0, rightGray.rows / 32 * 9, right);
-
-
+		detectLight(rightSrc, rightGray,rightDst, 0, rightGray.rows / 32 * 9, rightFrontRect);
 
 		rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
+		rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 		imshow("Right Result", rightSrc);
 		imshow("Right ROI", rightDst);
 
