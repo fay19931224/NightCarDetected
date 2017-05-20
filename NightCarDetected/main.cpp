@@ -107,7 +107,6 @@ Mat detectLight(Mat src, Rect rect)
 	ThresholdValueAdjust = ThresholdValue*0.875 + previousThresholdValue*0.125;
 	threshold(ROI, ROI, ThresholdValueAdjust, 255, THRESH_BINARY); //OTSU is not necessary to set thres
 	previousThresholdValue = ThresholdValueAdjust;
-	Mat kernal()
 	erode(ROI, ROI, 2);
 	dilate(ROI, ROI, 3);
 
@@ -128,7 +127,7 @@ int main() {
 	Mat leftGray, rightGray;
 	
 	//string path = "C://Users//¹ù«a³Í//Desktop//NightVehicleDetection//NightVehicleDetection//AV1-20170510_213352.avi";//µLÂo
-	string path = "C://Users//¹ù«a³Í//Desktop//Produce.mp4";//Âo
+	string path = "C:/Users/Henry/Documents/NightCarDetected/NightCarDetected/video/Produce.mp4";//Âo
 	
 
 

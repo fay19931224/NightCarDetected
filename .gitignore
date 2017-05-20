@@ -3,3 +3,6 @@ x64/
 packages/
 *.VC.db
 *.sdf
+*.opendb
+*.avi
+*.mp4
