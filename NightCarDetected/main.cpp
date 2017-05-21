@@ -28,7 +28,7 @@ void removeNoice(Mat &ROI)
 	dilate(ROI, ROI, kernalCIRCLE);
 }
 
-void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offsetY, Rect region) {
+void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion, Rect rearRegion) {
 
 	Mat labelImg, stats, centroids;
 	int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
@@ -44,9 +44,7 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
 
 		if (area > 50)
-		{
-			//ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
-			//ObjectDetectedVector.push_back(objectDetected);
+		{						
 			if (ObjectDetectedVector.size() == 0)
 			{
 				ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
@@ -60,7 +58,7 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 					if ((abs(ObjectDetectedVector[i].centroid.y - centroid.y) >= 10) ||
 						(abs(ObjectDetectedVector[i].centroid.x - centroid.x) < 5))
 						{
-							cout << "111111" << endl;
+							//cout << "111111" << endl;
 							Mat lightObject = rightGray(Rect(left, top, width, height));
 							int sumOfGreyIntensity = 0;
 							int sumOfGreyIntensityOfVariance = 0;
@@ -76,9 +74,8 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 							}
 							mean = sumOfGreyIntensity / (lightObject.rows + lightObject.cols);
 							variance = (sumOfGreyIntensityOfVariance / (lightObject.rows + lightObject.cols)) - (mean * mean);
-							cout << "mean : " << mean << endl;
-							cout << "vari{ance : " << variance << endl;
-							
+						//	cout << "mean : " << mean << endl;
+						//	cout << "vari{ance : " << variance << endl;							
 							if (mean < 1100 || variance > -7e05)
 								isReflection = true;
 						}
@@ -91,32 +88,38 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 				}
 			}
 		}
-
-		//line(srcImg, centroid, centroid, Scalar(255, 255, 255), 5, 8, 0);
-		//rectangle(srcImg, Rect(left, top, width, height), Scalar(0, 170, 255), 2);	
 	}
 	
 	for (int i = 0; i < ObjectDetectedVector.size(); i++)
-	{
+	{		
 		for (int j = 0; j < ObjectDetectedVector.size(); j++)
 		{
 			if ((i != j) && (ObjectDetectedVector[i].isMatched == false) && (ObjectDetectedVector[j].isMatched == false))
 			{
 				//i is on left and j is on right
-				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) && 
+				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 20) && 
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x > 0) && 
-					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 3)))
+					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 3*2)))
 				{
 					ObjectDetectedVector[i].isMatched = true;
-					ObjectDetectedVector[j].isMatched = true;
-					//int top = (ObjectDetectedVector[j].region.y + ObjectDetectedVector[i].region.y) / 2;					
+					ObjectDetectedVector[j].isMatched = true;					
 					Rect rect = Rect(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width)- ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
 					rectangle(srcImg, rect, Scalar(0, 0, 255), 3);
-					rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 255, 0), 2);
-					rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 0, 0), 2);
+					rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 0, 255), 2);
+					rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 0, 255), 2);
 				}
 			}
+		}
+		//determine isn't carlight from far position
+		if ((frontRegion.contains(ObjectDetectedVector[i].centroid)) && (ObjectDetectedVector[i].isMatched == false))
+		{
+			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 97, 255), 2);
+		}
+		//determine isn't carlight from near position
+		if ((rearRegion.contains(ObjectDetectedVector[i].centroid)) && (ObjectDetectedVector[i].isMatched == false)&&ObjectDetectedVector[i].region.area()>200)
+		{
+			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 255, 255), 2);
 		}
 	}
 }
@@ -187,7 +190,8 @@ int main() {
 	Mat rightDst, leftDst;
 	Mat leftGray, rightGray;
 
-	string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
+	//string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
+	string path = "E:/Dropbox/freeway_with_filter.mp4";
 	
 
 	VideoCapture capture(path);
@@ -215,15 +219,18 @@ int main() {
 		rightSrc = src(right);
 		cvtColor(rightSrc, rightGray, CV_BGR2GRAY);
 		Rect rightRect = Rect(0, rightGray.rows / 32 * 9, rightGray.cols / 6 * 5, rightGray.rows / 5 * 2);
-		Rect rightFrontRect = Rect(rightRect.width - rightGray.cols / 24 * 2, rightGray.rows / 32 * 9, rightGray.cols / 24 * 2, rightGray.rows / 5 * 1);
+		Rect rightFrontRect = Rect(rightRect.width - rightGray.cols / 24 * 3, rightGray.rows / 32 * 9, rightGray.cols / 24 * 3, rightGray.rows / 15 * 2);
+		Rect rightRearRect = Rect(0, rightGray.rows / 32 * 9, rightGray.cols / 5 * 2, rightGray.rows / 5 *1 );
+		
 		rightDst = removeNoiseAndThreshold(rightGray, rightRect);
 
 
-		detectLight(rightSrc, rightGray, rightDst, 0, rightGray.rows / 32 * 9, right);
+		detectLight(rightSrc, rightGray, rightDst, 0, rightGray.rows / 32 * 9, rightFrontRect, rightRearRect);
 
-
+		
 		rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
 		rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+		rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 		imshow("Right Result", rightSrc);
 		imshow("Right ROI", rightDst);
 
