@@ -76,7 +76,7 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 							variance = (sumOfGreyIntensityOfVariance / (lightObject.rows + lightObject.cols)) - (mean * mean);
 						//	cout << "mean : " << mean << endl;
 						//	cout << "vari{ance : " << variance << endl;							
-							if (mean < 1100 || variance > -7e05)
+							if (mean < 1200 || variance > -7e05)
 								isReflection = true;
 						}
 				}
@@ -191,7 +191,7 @@ int main() {
 	Mat leftGray, rightGray;
 
 	//string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
-	string path = "E:/Dropbox/freeway_with_filter.mp4";
+	string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
 	
 
 	VideoCapture capture(path);
