@@ -76,7 +76,7 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 							variance = (sumOfGreyIntensityOfVariance / (lightObject.rows + lightObject.cols)) - (mean * mean);
 						//	cout << "mean : " << mean << endl;
 						//	cout << "vari{ance : " << variance << endl;							
-							if (mean < 1200 || variance > -7e05)
+							if (mean < 1200 || variance > -8e06)
 								isReflection = true;
 						}
 				}
@@ -100,7 +100,7 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 20) && 
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x > 0) && 
-					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 3*2)))
+					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 4)))
 				{
 					ObjectDetectedVector[i].isMatched = true;
 					ObjectDetectedVector[j].isMatched = true;					
