@@ -18,7 +18,7 @@ struct ObjectDetected {
 
 int previousThresholdValue = 0;
 vector<ObjectDetected> ObjectDetectedVector;
-
+int framePos = 0;
 
 void removeNoice(Mat &ROI)
 {
@@ -43,23 +43,27 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 		int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
 
+		
+
 		if (area > 50)
-		{						
+		{				
+			//ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
+			//ObjectDetectedVector.push_back(objectDetected);
 			if (ObjectDetectedVector.size() == 0)
 			{
 				ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
 				ObjectDetectedVector.push_back(objectDetected);
 			}
-			else if (ObjectDetectedVector.size() > 0)
+			else if (ObjectDetectedVector.size() > 0) //determine where ti filte reflection
 			{
 				bool isReflection = false;
 				for (int i = 0; i < ObjectDetectedVector.size(); i++)
 				{
-					if ((abs(ObjectDetectedVector[i].centroid.y - centroid.y) >= 10) ||
-						(abs(ObjectDetectedVector[i].centroid.x - centroid.x) < 5))
+					if ((ObjectDetectedVector[i].centroid.y < centroid.y))
 						{
 							//cout << "111111" << endl;
 							Mat lightObject = rightGray(Rect(left, top, width, height));
+							//rectangle(rightGray, Rect(left, top, width, height), Scalar(255, 255, 255), 3);
 							int sumOfGreyIntensity = 0;
 							int sumOfGreyIntensityOfVariance = 0;
 							double mean = 0;
@@ -74,9 +78,9 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 							}
 							mean = sumOfGreyIntensity / (lightObject.rows + lightObject.cols);
 							variance = (sumOfGreyIntensityOfVariance / (lightObject.rows + lightObject.cols)) - (mean * mean);
-						//	cout << "mean : " << mean << endl;
-						//	cout << "vari{ance : " << variance << endl;							
-							if (mean < 1200 || variance > -8e06)
+							//cout << "mean : " << mean << endl;
+							//cout << "variance : " << variance << endl;					
+							if (mean < 800 && variance > -8e06)
 								isReflection = true;
 						}
 				}
@@ -97,7 +101,7 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 			if ((i != j) && (ObjectDetectedVector[i].isMatched == false) && (ObjectDetectedVector[j].isMatched == false))
 			{
 				//i is on left and j is on right
-				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 20) && 
+				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) && 
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x > 0) && 
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 4)))
@@ -191,7 +195,7 @@ int main() {
 	Mat leftGray, rightGray;
 
 	//string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
-	string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
+	string path = "C:/Users/Henry/Desktop/ตุณะ/video/freeway_with_filter.mp4";
 	
 
 	VideoCapture capture(path);
@@ -201,7 +205,7 @@ int main() {
 	}
 
 	Size videoSize = Size((int)capture.get(CV_CAP_PROP_FRAME_WIDTH), (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT));
-	capture.set(CV_CAP_PROP_POS_FRAMES, 0);
+	capture.set(CV_CAP_PROP_POS_FRAMES, framePos);
 	while (true)
 	{
 		capture >> src;
