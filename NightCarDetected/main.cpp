@@ -45,51 +45,52 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 
 		if (area > 50)
 		{						
-			if (ObjectDetectedVector.size() == 0)
-			{
-				ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
-				ObjectDetectedVector.push_back(objectDetected);
-			}
-			else if (ObjectDetectedVector.size() > 0)
-			{
-				bool isReflection = false;
-				for (int i = 0; i < ObjectDetectedVector.size(); i++)
-				{
-					if ((abs(ObjectDetectedVector[i].centroid.y - centroid.y) >= 10) ||
-						(abs(ObjectDetectedVector[i].centroid.x - centroid.x) < 5))
-						{
-							//cout << "111111" << endl;
-							Mat lightObject = rightGray(Rect(left, top, width, height));
-							int sumOfGreyIntensity = 0;
-							int sumOfGreyIntensityOfVariance = 0;
-							double mean = 0;
-							double variance = 0;
-							for (int row = 0; row < lightObject.rows; row++)
-							{
-								for (int col = 0; col < lightObject.cols; col++)
-								{
-									sumOfGreyIntensity += lightObject.at<uchar>(row, col);
-									sumOfGreyIntensityOfVariance += (lightObject.at<uchar>(row, col) * lightObject.at<uchar>(row, col));
-								}
-							}
-							mean = sumOfGreyIntensity / (lightObject.rows + lightObject.cols);
-							variance = (sumOfGreyIntensityOfVariance / (lightObject.rows + lightObject.cols)) - (mean * mean);
-						//	cout << "mean : " << mean << endl;
-						//	cout << "vari{ance : " << variance << endl;							
-							if (mean < 1200 || variance > -8e06)
-								isReflection = true;
-						}
-				}
+			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
+			ObjectDetectedVector.push_back(objectDetected);
+		//	if (ObjectDetectedVector.size() == 0)
+		//	{
+		//		ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
+		//		ObjectDetectedVector.push_back(objectDetected);
+		//	}
+		//	else if (ObjectDetectedVector.size() > 0)
+		//	{
+		//		bool isReflection = false;
+		//		for (int i = 0; i < ObjectDetectedVector.size(); i++)
+		//		{
+		//			if ((abs(ObjectDetectedVector[i].centroid.y - centroid.y) >= 10) ||
+		//				(abs(ObjectDetectedVector[i].centroid.x - centroid.x) < 5))
+		//				{
+		//					//cout << "111111" << endl;
+		//					Mat lightObject = rightGray(Rect(left, top, width, height));
+		//					int sumOfGreyIntensity = 0;
+		//					int sumOfGreyIntensityOfVariance = 0;
+		//					double mean = 0;
+		//					double variance = 0;
+		//					for (int row = 0; row < lightObject.rows; row++)
+		//					{
+		//						for (int col = 0; col < lightObject.cols; col++)
+		//						{
+		//							sumOfGreyIntensity += lightObject.at<uchar>(row, col);
+		//							sumOfGreyIntensityOfVariance += (lightObject.at<uchar>(row, col) * lightObject.at<uchar>(row, col));
+		//						}
+		//					}
+		//					mean = sumOfGreyIntensity / (lightObject.rows + lightObject.cols);
+		//					variance = (sumOfGreyIntensityOfVariance / (lightObject.rows + lightObject.cols)) - (mean * mean);
+		//				//	cout << "mean : " << mean << endl;
+		//				//	cout << "vari{ance : " << variance << endl;							
+		//					if (mean < 1200 || variance > -8e06)
+		//						isReflection = true;
+		//				}
+		//		}
 
-				if (!isReflection)
-				{
-					ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
-					ObjectDetectedVector.push_back(objectDetected);
-				}
-			}
+		//		if (!isReflection)
+		//		{
+		//			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
+		//			ObjectDetectedVector.push_back(objectDetected);
+		//		}
+		//	}
 		}
-	}
-	
+	}	
 	for (int i = 0; i < ObjectDetectedVector.size(); i++)
 	{		
 		for (int j = 0; j < ObjectDetectedVector.size(); j++)
@@ -97,7 +98,7 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 			if ((i != j) && (ObjectDetectedVector[i].isMatched == false) && (ObjectDetectedVector[j].isMatched == false))
 			{
 				//i is on left and j is on right
-				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 20) && 
+				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) && 
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x > 0) && 
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 4)))
@@ -191,7 +192,7 @@ int main() {
 	Mat leftGray, rightGray;
 
 	//string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
-	string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
+	string path = "C:/Users/User/Dropbox/freeway_with_filter.mp4";
 	
 
 	VideoCapture capture(path);
@@ -228,9 +229,9 @@ int main() {
 		detectLight(rightSrc, rightGray, rightDst, 0, rightGray.rows / 32 * 9, rightFrontRect, rightRearRect);
 
 		
-		rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
-		rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
-		rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 		imshow("Right Result", rightSrc);
 		imshow("Right ROI", rightDst);
 
