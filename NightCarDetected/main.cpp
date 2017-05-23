@@ -22,7 +22,7 @@ int framePos = 0;
 
 void removeNoice(Mat &ROI)
 {
-	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(8, 6));
+	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(12, 6));
 	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(6, 6));
 	erode(ROI, ROI, kernalELLIPSE);
 	dilate(ROI, ROI, kernalCIRCLE);
@@ -90,10 +90,9 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 					ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
 					ObjectDetectedVector.push_back(objectDetected);
 				}
-			}
+			}						
 		}
 	}
-	
 	for (int i = 0; i < ObjectDetectedVector.size(); i++)
 	{		
 		for (int j = 0; j < ObjectDetectedVector.size(); j++)
@@ -194,8 +193,8 @@ int main() {
 	Mat rightDst, leftDst;
 	Mat leftGray, rightGray;
 
-	//string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
 	string path = "C:/Users/Henry/Desktop/ตุณะ/video/freeway_with_filter.mp4";
+	//string path = "C:/Users/User/Dropbox/freeway_with_filter.mp4";
 	
 
 	VideoCapture capture(path);
@@ -232,9 +231,9 @@ int main() {
 		detectLight(rightSrc, rightGray, rightDst, 0, rightGray.rows / 32 * 9, rightFrontRect, rightRearRect);
 
 		
-		rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
-		rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
-		rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 		imshow("Right Result", rightSrc);
 		imshow("Right ROI", rightDst);
 
