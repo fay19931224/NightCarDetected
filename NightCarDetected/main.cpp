@@ -22,7 +22,7 @@ vector<ObjectDetected> ObjectDetectedVector;
 
 void removeNoice(Mat &ROI)
 {
-	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(8, 6));
+	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(12, 6));
 	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(6, 6));
 	erode(ROI, ROI, kernalELLIPSE);
 	dilate(ROI, ROI, kernalCIRCLE);
