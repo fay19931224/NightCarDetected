@@ -54,7 +54,7 @@ void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offs
 				ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
 				ObjectDetectedVector.push_back(objectDetected);
 			}
-			else if (ObjectDetectedVector.size() > 0) //determine where ti filte reflection
+			else if (ObjectDetectedVector.size() > 0) //determine where to filte reflection
 			{
 				bool isReflection = false;
 				for (int i = 0; i < ObjectDetectedVector.size(); i++)
