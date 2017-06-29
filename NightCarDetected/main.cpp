@@ -191,13 +191,15 @@ int main() {
 	Mat rightDst, leftDst;
 	Mat leftGray, rightGray;
 
-	//string path = "C:/Users/HenryLiang/Documents/video/freeway_with_filter.mp4";
-	string path = "C:/Users/User/Dropbox/freeway_with_filter.mp4";
+	string path = "C:/Users/Henry/Documents/video/AV1-20170626_190712.avi";
+	//"C:/Users/Henry/Documents/video/freeway_with_filter.mp4";
+	//string path = "C:/Users/User/Dropbox/freeway_with_filter.mp4";
 	
-
+	
 	VideoCapture capture(path);
 	if (!capture.isOpened()) {
 		cout << "Cannot open video" << endl;
+		system("pause");
 		return -1;
 	}
 
@@ -205,11 +207,12 @@ int main() {
 	capture.set(CV_CAP_PROP_POS_FRAMES, 0);
 	while (true)
 	{
+		
 		capture >> src;
 		if (src.empty()) {
 			break;
 		}
-
+		
 		/*
 		leftSrc = src(Rect(videoSize.width / 2, videoSize.height / 2, videoSize.width / 2, videoSize.height / 2));
 		cvtColor(leftSrc, leftGray, CV_BGR2GRAY);
@@ -220,8 +223,11 @@ int main() {
 		rightSrc = src(right);
 		cvtColor(rightSrc, rightGray, CV_BGR2GRAY);
 		Rect rightRect = Rect(0, rightGray.rows / 32 * 9, rightGray.cols / 6 * 5, rightGray.rows / 5 * 2);
+		Rect rightRectExt = Rect(0, rightGray.rows / 32 * 8, rightGray.cols / 7 * 6, rightGray.rows / 5 * 2 + rightGray.rows / 32 * 1);
 		Rect rightFrontRect = Rect(rightRect.width - rightGray.cols / 24 * 3, rightGray.rows / 32 * 9, rightGray.cols / 24 * 3, rightGray.rows / 15 * 2);
+		Rect rightFrontRectExt = Rect(rightRect.width - rightGray.cols / 24 * 3, rightGray.rows / 32 * 8, rightGray.cols / 24 * 3 + 20 , rightGray.rows / 15 * 2 + rightGray.rows / 32 * 1);
 		Rect rightRearRect = Rect(0, rightGray.rows / 32 * 9, rightGray.cols / 5 * 2, rightGray.rows / 5 *1 );
+		Rect rightRearRectExt = Rect(0, rightGray.rows / 32 * 8, rightGray.cols / 5 * 2, rightGray.rows / 5 * 1 + rightGray.rows / 32 * 1);
 		
 		rightDst = removeNoiseAndThreshold(rightGray, rightRect);
 
@@ -229,15 +235,18 @@ int main() {
 		detectLight(rightSrc, rightGray, rightDst, 0, rightGray.rows / 32 * 9, rightFrontRect, rightRearRect);
 
 		
-		//rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
-		//rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
-		//rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+		rectangle(rightSrc, rightRectExt, Scalar(0, 255, 0), 1, 8, 0); // draw ROI
+		rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
+		rectangle(rightSrc, rightFrontRectExt, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
+		rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+		rectangle(rightSrc, rightRearRectExt, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
+		rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 		imshow("Right Result", rightSrc);
 		imshow("Right ROI", rightDst);
-
+		
 		waitKey(1);
 	}
-
+	
 
 
 }
