@@ -18,8 +18,22 @@
     <ClCompile Include="main.cpp">
       <Filter>資源檔</Filter>
     </ClCompile>
+    <ClCompile Include="ImageProcessor.cpp">
+      <Filter>資源檔</Filter>
+    </ClCompile>
+    <ClCompile Include="OtsuMultiThreshold.cpp">
+      <Filter>資源檔</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ImageProcessor.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="OtsuMultiThreshold.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
