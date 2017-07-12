@@ -19,14 +19,14 @@ int main() {
 	Mat rightSrc, leftSrc;
 	Mat rightDst, leftDst;
 	Mat leftGray, rightGray;
+	Mat leftGrayRect, rightGrayRect;
 	Mat temp;
-	
 	//string path = "C:/Users/User/Dropbox/AV1-20170710_193208.avi"; 
 	string path = "C:/Users/User/Dropbox/¤w°Å/AV1-20170710_194208(0-1¤À34).avi";
 
 	//string path = "C:/Users/User/Dropbox/AV1-20170627_122941.avi";
 	
-	ImageProcessor imagepProcessor;
+	ImageProcessor imageProcessor;
 	VideoCapture capture(path);
 	if (!capture.isOpened()) {
 		cout << "Cannot open video" << endl;
@@ -50,9 +50,14 @@ int main() {
 
 
 		//right part
-		Rect rightRect = Rect(0, rightGray.rows*3/10, rightGray.cols*17/20 , rightGray.rows/3 );
-		rectangle(rightSrc, rightRect, Scalar(0, 255, 0), 1, 8, 0); // draw ROI
-		temp = rightGray(rightRect);
+		Rect rightRect = Rect(0, rightGray.rows*28/100, rightGray.cols*17/20 , rightGray.rows*5/12 );
+		rectangle(rightSrc, rightRect, Scalar(0, 255, 255), 1, 8, 0); // draw ROI
+		rightGrayRect = rightGray(rightRect);
+		temp=rightGrayRect.clone();
+		
+
+
+
 
 		/*OtsuMultiThreshold o;
 		o.getHistogram(temp);
@@ -64,33 +69,33 @@ int main() {
 		cout << multiThres[0] << endl;
 		cout << multiThres[1] << endl;
 		cout << multiThres[2] << endl;
-		cout <<endl;
+		cout <<endl;		
+		*/
 		
-		/*
-		
-		Rect rightRectExt = Rect(0, rightGray.rows / 32 * 8, rightGray.cols / 7 * 6, rightGray.rows / 5 * 2 + rightGray.rows / 32 * 1);
-		Rect rightFrontRect = Rect(rightRect.width - rightGray.cols / 24 * 3, rightGray.rows / 32 * 9, rightGray.cols / 24 * 3, rightGray.rows / 15 * 2);
+		/*Rect rightRectExt = Rect(0, rightGray.rows / 32 * 8, rightGray.cols / 7 * 6, rightGray.rows / 5 * 2 + rightGray.rows / 32 * 1);
+		Rect rightFrontRect = Rect(right.width - rightGray.cols / 24 * 3, rightGray.rows / 32 * 9, rightGray.cols / 24 * 3, rightGray.rows / 15 * 2);
 		Rect rightFrontRectExt = Rect(rightRect.width - rightGray.cols / 24 * 3, rightGray.rows / 32 * 8, rightGray.cols / 24 * 3 + 20 , rightGray.rows / 15 * 2 + rightGray.rows / 32 * 1);
 		Rect rightRearRect = Rect(0, rightGray.rows / 32 * 9, rightGray.cols / 5 * 2, rightGray.rows / 5 *1 );
 		Rect rightRearRectExt = Rect(0, rightGray.rows / 32 * 8, rightGray.cols / 5 * 2, rightGray.rows / 5 * 1 + rightGray.rows / 32 * 1);
+		*/
 		
-		rightDst = imagepProcessor.removeNoiseAndThreshold(rightGray, rightRect);
+		imageProcessor.threshold_hist(temp);
+		imageProcessor.removeNoice(temp);
 
-
-		imagepProcessor.detectLight(rightSrc, rightGray, rightDst, 0, rightGray.rows / 32 * 9, rightFrontRect, rightRearRect);
+		//imageProcessor.detectLight(rightSrc, rightGray, rightDst, 0, rightGray.rows / 32 * 9, rightFrontRect, rightRearRect);
 
 		
-		rectangle(rightSrc, rightRectExt, Scalar(0, 255, 0), 1, 8, 0); // draw ROI
-		rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
-		rectangle(rightSrc, rightFrontRectExt, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
-		rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
-		rectangle(rightSrc, rightRearRectExt, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
-		rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI*/
+		//rectangle(rightSrc, rightRectExt, Scalar(0, 255, 0), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightFrontRectExt, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightRearRectExt, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
+		//rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 		imshow("Right Result", rightSrc);
-		imshow("Right Re", rightGray);
+		imshow("Right Re", temp);
 		
-		imshow("temp", temp);
-		//imshow("Right ROI", rightDst);
+		
+		
 		
 		
 		waitKey(1);

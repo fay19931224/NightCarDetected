@@ -8,19 +8,13 @@ ImageProcessor::~ImageProcessor()
 {
 }
 
-Mat ImageProcessor::removeNoiseAndThreshold(Mat src, Rect rect)
+void ImageProcessor::threshold_hist(Mat& src)
 {
-	Mat ROI, ROITemp;
-
-	ROITemp = src(rect);
-	ROI = ROITemp.clone();
-
 
 	int ThresholdValue = 0;
 	int ThresholdValueAdjust = 0;
-	double avgThresholdValueOfLight = 0;
-
-	ThresholdValue = thresholdValue(ROI);
+	
+	ThresholdValue = thresholdValue(src);
 
 	if (previousThresholdValue == 0)
 	{
@@ -28,20 +22,16 @@ Mat ImageProcessor::removeNoiseAndThreshold(Mat src, Rect rect)
 	}
 
 	ThresholdValueAdjust = ThresholdValue*0.875 + previousThresholdValue*0.125;
-	threshold(ROI, ROI, ThresholdValueAdjust, 255, THRESH_BINARY); //OTSU is not necessary to set thres
+	threshold(src, src, ThresholdValueAdjust, 255, THRESH_BINARY); //OTSU is not necessary to set thres
 	previousThresholdValue = ThresholdValueAdjust;
-
-	removeNoice(ROI);
-
-	return ROI;
 }
 
-void ImageProcessor::removeNoice(Mat &ROI)
+void ImageProcessor::removeNoice(Mat &src)
 {
-	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(12, 6));
+	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(6, 6));
 	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(6, 6));
-	erode(ROI, ROI, kernalELLIPSE);
-	dilate(ROI, ROI, kernalCIRCLE);
+	erode(src, src, kernalELLIPSE);
+	dilate(src, src, kernalCIRCLE);	
 }
 
 void ImageProcessor::detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion, Rect rearRegion) {
@@ -141,7 +131,6 @@ void ImageProcessor::detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int o
 	}
 }
 
-
 int ImageProcessor::thresholdValue(Mat& src)
 {
 	int* grayLevel = new int[256];
@@ -164,7 +153,7 @@ int ImageProcessor::thresholdValue(Mat& src)
 	for (int i = 0; i < 256; i++)
 	{
 		sumOfGrayLevel += grayLevel[i];
-		if (sumOfGrayLevel>NumberOfPixel*0.98)
+		if (sumOfGrayLevel>NumberOfPixel*0.985)
 		{
 			if (i<20)
 				return 20;
@@ -173,3 +162,14 @@ int ImageProcessor::thresholdValue(Mat& src)
 	}
 }
 
+void ImageProcessor::extractImage(Mat& src) 
+{
+	for (unsigned int col = src.cols /3; col < src.cols; col++)
+	{
+		for (unsigned int row = 0; row < src.rows/4; row++)
+		{
+			if(col+ src.cols / 3 >row*3)
+				src.at<uchar>(row, col) = 0;
+		}
+	}
+}

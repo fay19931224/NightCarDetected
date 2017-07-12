@@ -11,10 +11,11 @@ class ImageProcessor
 public:
 	ImageProcessor();
 	~ImageProcessor();
-	Mat removeNoiseAndThreshold(Mat src, Rect rect);
+	void threshold_hist(Mat& src);
 	void removeNoice(Mat &ROI);
 	void detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion, Rect rearRegion);
 	int thresholdValue(Mat& src);
+	void extractImage(Mat& src);
 private:
 	struct ObjectDetected {
 		bool isMatched;
