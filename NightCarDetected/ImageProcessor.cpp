@@ -1,5 +1,10 @@
 #include "ImageProcessor.h"
 
+bool ImageProcessor::compareDistance(const ImageProcessor::ObjectDetected &a, const ImageProcessor::ObjectDetected &b)
+{
+	return a.centroid.x < b.centroid.x;
+}
+
 ImageProcessor::ImageProcessor()
 {
 }
@@ -28,13 +33,13 @@ void ImageProcessor::threshold_hist(Mat& src)
 
 void ImageProcessor::removeNoice(Mat &src)
 {
-	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(6, 6));
-	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(6, 6));
+	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(7, 7));
+	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(10, 10));
 	erode(src, src, kernalELLIPSE);
 	dilate(src, src, kernalCIRCLE);	
 }
 
-void ImageProcessor::detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion, Rect rearRegion) {
+void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion, Rect rearRegion) {
 
 	Mat labelImg, stats, centroids;
 	int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
@@ -49,9 +54,9 @@ void ImageProcessor::detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int o
 		int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
 
-		if (area > 50)
+		if (area > 40)
 		{
-			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
+			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid ,true };
 			ObjectDetectedVector.push_back(objectDetected);
 			//	if (ObjectDetectedVector.size() == 0)
 			//	{
@@ -88,7 +93,7 @@ void ImageProcessor::detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int o
 			//						isReflection = true;
 			//				}
 			//		}
-
+			//
 			//		if (!isReflection)
 			//		{
 			//			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid };
@@ -97,16 +102,31 @@ void ImageProcessor::detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int o
 			//	}
 		}
 	}
+	
 	for (int i = 0; i < ObjectDetectedVector.size(); i++)
 	{
+		for (int j = 0; j < ObjectDetectedVector.size(); j++) 
+		{
+			if((abs(ObjectDetectedVector[i].centroid.x- ObjectDetectedVector[j].centroid.x)<10)
+				&&(ObjectDetectedVector[i].centroid.y > ObjectDetectedVector[j].centroid.y))
+			{
+				ObjectDetectedVector[j].upperPosition = false;
+			}
+		}
+	}
+	
+	sort(ObjectDetectedVector.begin(), ObjectDetectedVector.end(), compareDistance);
+	
+	for (int i = 0; i < ObjectDetectedVector.size(); i++)
+	{		
 		for (int j = 0; j < ObjectDetectedVector.size(); j++)
 		{
-			if ((i != j) && (ObjectDetectedVector[i].isMatched == false) && (ObjectDetectedVector[j].isMatched == false))
+			if ((i != j) && (ObjectDetectedVector[i].isMatched == false) && (ObjectDetectedVector[j].isMatched == false)&&ObjectDetectedVector[j].upperPosition&&ObjectDetectedVector[i].upperPosition)
 			{
-				//i is on left and j is on right
+				// i is on left and  j is on right
 				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) &&
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
-					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x > 0) &&
+					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x >(binaryImg.cols / 20)) &&
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 4)))
 				{
 					ObjectDetectedVector[i].isMatched = true;
@@ -117,18 +137,28 @@ void ImageProcessor::detectLight(Mat srcImg, Mat rightGray, Mat binaryImg, int o
 					rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 0, 255), 2);
 				}
 			}
-		}
+		}		
 		//determine isn't carlight from far position
 		if ((frontRegion.contains(ObjectDetectedVector[i].centroid)) && (ObjectDetectedVector[i].isMatched == false))
 		{
 			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 97, 255), 2);
 		}
 		//determine isn't carlight from near position
-		if ((rearRegion.contains(ObjectDetectedVector[i].centroid)) && (ObjectDetectedVector[i].isMatched == false) && ObjectDetectedVector[i].region.area()>200)
+		/*if ((rearRegion.contains(ObjectDetectedVector[i].centroid)) && (ObjectDetectedVector[i].isMatched == false) && ObjectDetectedVector[i].region.area()>200)
 		{
 			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 255, 255), 2);
+		}*/
+
+		for (int i = 0; i < ObjectDetectedVector.size(); i++)
+		{
+			if (ObjectDetectedVector[i].upperPosition == false) {
+				rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(25, 122, 111), 2);
+			}
 		}
+
+
 	}
+	cout << endl;
 }
 
 int ImageProcessor::thresholdValue(Mat& src)
@@ -153,7 +183,7 @@ int ImageProcessor::thresholdValue(Mat& src)
 	for (int i = 0; i < 256; i++)
 	{
 		sumOfGrayLevel += grayLevel[i];
-		if (sumOfGrayLevel>NumberOfPixel*0.985)
+		if (sumOfGrayLevel>NumberOfPixel*0.98)
 		{
 			if (i<20)
 				return 20;
@@ -162,13 +192,13 @@ int ImageProcessor::thresholdValue(Mat& src)
 	}
 }
 
-void ImageProcessor::extractImage(Mat& src) 
+void ImageProcessor::extractEfficientImage(Mat& src)
 {
-	for (unsigned int col = src.cols /3; col < src.cols; col++)
+	for (unsigned int col = src.cols / 3; col < src.cols; col++)//¼e
 	{
-		for (unsigned int row = 0; row < src.rows/4; row++)
+		for (unsigned int row = 0; row < src.rows; row++)//°ª
 		{
-			if(col+ src.cols / 3 >row*3)
+			if(col- src.cols/3>row*8)
 				src.at<uchar>(row, col) = 0;
 		}
 	}

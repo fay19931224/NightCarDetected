@@ -12,8 +12,6 @@ using namespace std;
 using namespace cv;
 
 
-
-
 int main() {
 	Mat src;
 	Mat rightSrc, leftSrc;
@@ -56,8 +54,11 @@ int main() {
 		temp=rightGrayRect.clone();
 		
 
+		Rect rightFrontRect = Rect(0, rightGray.rows * 28 / 100, rightGray.cols / 5, rightGray.rows * 5 / 12);
+		rectangle(rightSrc, rightFrontRect, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
 
-
+		Rect rightRearRect = Rect(rightGray.rows , rightGray.rows * 28 / 100, rightGray.cols * 17 / 20 - rightGray.rows * 8 / 9, rightGray.rows * 5 / 12);
+		rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 
 		/*OtsuMultiThreshold o;
 		o.getHistogram(temp);
@@ -72,27 +73,31 @@ int main() {
 		cout <<endl;		
 		*/
 		
-		/*Rect rightRectExt = Rect(0, rightGray.rows / 32 * 8, rightGray.cols / 7 * 6, rightGray.rows / 5 * 2 + rightGray.rows / 32 * 1);
+		/*
+		Rect rightRectExt = Rect(0, rightGray.rows / 32 * 8, rightGray.cols / 7 * 6, rightGray.rows / 5 * 2 + rightGray.rows / 32 * 1);
 		Rect rightFrontRect = Rect(right.width - rightGray.cols / 24 * 3, rightGray.rows / 32 * 9, rightGray.cols / 24 * 3, rightGray.rows / 15 * 2);
 		Rect rightFrontRectExt = Rect(rightRect.width - rightGray.cols / 24 * 3, rightGray.rows / 32 * 8, rightGray.cols / 24 * 3 + 20 , rightGray.rows / 15 * 2 + rightGray.rows / 32 * 1);
 		Rect rightRearRect = Rect(0, rightGray.rows / 32 * 9, rightGray.cols / 5 * 2, rightGray.rows / 5 *1 );
 		Rect rightRearRectExt = Rect(0, rightGray.rows / 32 * 8, rightGray.cols / 5 * 2, rightGray.rows / 5 * 1 + rightGray.rows / 32 * 1);
 		*/
-		
+
+		imageProcessor.extractEfficientImage(temp);
 		imageProcessor.threshold_hist(temp);
 		imageProcessor.removeNoice(temp);
+		imageProcessor.detectLight(rightSrc, temp,0, rightGray.rows * 28 / 100, rightFrontRect, rightFrontRect);
+		
 
 		//imageProcessor.detectLight(rightSrc, rightGray, rightDst, 0, rightGray.rows / 32 * 9, rightFrontRect, rightRearRect);
 
 		
-		//rectangle(rightSrc, rightRectExt, Scalar(0, 255, 0), 1, 8, 0); // draw ROI
-		//rectangle(rightSrc, rightRect, Scalar(255, 255, 255), 1, 8, 0); // draw ROI
+		
 		//rectangle(rightSrc, rightFrontRectExt, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
 		//rectangle(rightSrc, rightFrontRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 		//rectangle(rightSrc, rightRearRectExt, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
 		//rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+
 		imshow("Right Result", rightSrc);
-		imshow("Right Re", temp);
+		imshow("Right Binary", temp);
 		
 		
 		
