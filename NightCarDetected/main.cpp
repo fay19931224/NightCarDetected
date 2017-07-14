@@ -22,17 +22,25 @@ int main() {
 	//string path = "C:/Users/User/Dropbox/AV1-20170710_193208.avi"; 
 	string path = "C:/Users/User/Dropbox/¤w°Å/AV1-20170710_194208(0-1¤À34).avi";
 
-	//string path = "C:/Users/User/Dropbox/AV1-20170627_122941.avi";
-	
+	//string path = "C:/Users/User/Dropbox/AV1-20170627_122941.avi";	
 	ImageProcessor imageProcessor;
+	VideoWriter videoWriter;
 	VideoCapture capture(path);
 	if (!capture.isOpened()) {
 		cout << "Cannot open video" << endl;
 		system("pause");
+		
 		return -1;
 	}
-
 	Size videoSize = Size((int)capture.get(CV_CAP_PROP_FRAME_WIDTH), (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT));
+	//videoWriter.open("test.avi", capture.get(CV_CAP_PROP_FOURCC), capture.get(CV_CAP_PROP_FPS), CvSize(videoSize.width / 2, videoSize.height / 2));
+	videoWriter.open("test.avi", CV_FOURCC('M', 'J', 'P', 'G'), capture.get(CV_CAP_PROP_FPS), CvSize(videoSize.width / 2, videoSize.height / 2));
+	if (!videoWriter.isOpened()) 
+	{
+		system("pause");
+
+		return -1;
+	}
 	capture.set(CV_CAP_PROP_POS_FRAMES, 0);
 	while (true)
 	{
@@ -56,8 +64,8 @@ int main() {
 
 		Rect rightFrontRect = Rect(0, rightGray.rows * 28 / 100, rightGray.cols / 5, rightGray.rows * 5 / 12);
 		rectangle(rightSrc, rightFrontRect, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
-
-		Rect rightRearRect = Rect(rightGray.rows , rightGray.rows * 28 / 100, rightGray.cols * 17 / 20 - rightGray.rows * 8 / 9, rightGray.rows * 5 / 12);
+		
+		Rect rightRearRect = Rect(rightGray.cols*2/3 , rightGray.rows * 28 / 100, rightGrayRect.cols-rightGray.cols * 2 / 3, rightGray.rows * 5 / 12);
 		rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 
 		/*OtsuMultiThreshold o;
@@ -100,7 +108,7 @@ int main() {
 		imshow("Right Binary", temp);
 		
 		
-		
+		videoWriter << rightSrc;
 		
 		
 		waitKey(1);
