@@ -21,7 +21,10 @@
     <ClCompile Include="ImageProcessor.cpp">
       <Filter>資源檔</Filter>
     </ClCompile>
-    <ClCompile Include="OtsuMultiThreshold.cpp">
+    <ClCompile Include="CBrightObjectSegment.cpp">
+      <Filter>資源檔</Filter>
+    </ClCompile>
+    <ClCompile Include="CPartClass.cpp">
       <Filter>資源檔</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,7 +35,10 @@
     <ClInclude Include="ImageProcessor.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
-    <ClInclude Include="OtsuMultiThreshold.h">
+    <ClInclude Include="CBrightObjectSegment.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="CPartClass.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
   </ItemGroup>

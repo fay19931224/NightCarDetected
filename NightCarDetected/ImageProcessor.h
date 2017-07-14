@@ -17,6 +17,7 @@ public:
 		Rect region;
 		Point centroid;
 		bool upperPosition;
+		int area;
 	};
 	void threshold_hist(Mat& src);
 	void removeNoice(Mat &ROI);

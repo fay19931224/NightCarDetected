@@ -33,7 +33,7 @@ void ImageProcessor::threshold_hist(Mat& src)
 
 void ImageProcessor::removeNoice(Mat &src)
 {
-	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(7, 7));
+	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
 	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(10, 10));
 	erode(src, src, kernalELLIPSE);
 	dilate(src, src, kernalCIRCLE);	
@@ -53,10 +53,10 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 		int left = stats.at<int>(label, CC_STAT_LEFT) + offsetX;
 		int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
-
-		if (area > 40)
+		
+		if (area > 20)
 		{			
-			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid ,true };
+			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid ,true ,area};
 			ObjectDetectedVector.push_back(objectDetected);
 			//	if (ObjectDetectedVector.size() == 0)
 			//	{
@@ -119,7 +119,8 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 	for (vector<ObjectDetected>::iterator it =ObjectDetectedVector.begin(); it!=ObjectDetectedVector.end();)
 	{
 		ObjectDetected temp=(ObjectDetected)*it;
-		if (temp.upperPosition == false) {
+		if (temp.upperPosition == false) 
+		{
 			it = ObjectDetectedVector.erase(it);
 		}
 		else
@@ -139,15 +140,32 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 				// i is on left and  j is on right
 				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) &&
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
-					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x >(binaryImg.cols / 20)) &&
-					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < (binaryImg.cols / 4)))
+					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x >10) &&
+					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x <130))
 				{
-					ObjectDetectedVector[i].isMatched = true;
-					ObjectDetectedVector[j].isMatched = true;
-					Rect rect = Rect(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
-					rectangle(srcImg, rect, Scalar(0, 0, 255), 3);
-					rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
-					rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
+					if (rearRegion.contains(ObjectDetectedVector[i].centroid) || rearRegion.contains(ObjectDetectedVector[j].centroid)) 
+					{
+						if ((ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < 60)&&(abs(ObjectDetectedVector[i].area- ObjectDetectedVector[j].area)<10))
+						{
+							ObjectDetectedVector[i].isMatched = true;
+							ObjectDetectedVector[j].isMatched = true;
+							Rect rect = Rect(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
+							rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
+							rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
+							rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
+							//cout << ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x <<"  11111111111111111111111111111" <<endl;							
+						}
+					}
+					else 
+					{
+						ObjectDetectedVector[i].isMatched = true;
+						ObjectDetectedVector[j].isMatched = true;
+						Rect rect = Rect(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
+						rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
+						rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
+						rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
+						cout << ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x << endl;
+					}
 				}
 			}
 		}		

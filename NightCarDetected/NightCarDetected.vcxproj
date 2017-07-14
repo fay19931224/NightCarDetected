@@ -115,16 +115,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CBrightObjectSegment.cpp" />
+    <ClCompile Include="CPartClass.cpp" />
     <ClCompile Include="ImageProcessor.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="OtsuMultiThreshold.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CBrightObjectSegment.h" />
+    <ClInclude Include="CPartClass.h" />
     <ClInclude Include="ImageProcessor.h" />
-    <ClInclude Include="OtsuMultiThreshold.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
