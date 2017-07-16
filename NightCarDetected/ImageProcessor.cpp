@@ -31,10 +31,11 @@ void ImageProcessor::threshold_hist(Mat& src)
 	previousThresholdValue = ThresholdValueAdjust;
 }
 
-void ImageProcessor::removeNoice(Mat &src)
+void ImageProcessor::removeNoice(Mat &src, int Eheight, int Ewidth,int Dheight,int Dwidth)
 {
-	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
-	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(10, 10));
+	
+	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(Eheight, Ewidth));
+	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(Dheight, Dwidth));
 	erode(src, src, kernalELLIPSE);
 	dilate(src, src, kernalCIRCLE);	
 }

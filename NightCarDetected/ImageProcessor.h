@@ -20,7 +20,7 @@ public:
 		int area;
 	};
 	void threshold_hist(Mat& src);
-	void removeNoice(Mat &ROI);
+	void removeNoice(Mat &src, int Eheight, int Ewidth, int Dheight, int Dwidth);
 	void detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion, Rect rearRegion);
 	int thresholdValue(Mat& src);
 	void extractEfficientImage(Mat& src);	
