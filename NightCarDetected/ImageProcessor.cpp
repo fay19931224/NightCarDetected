@@ -139,14 +139,14 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 			if ((i != j) && (ObjectDetectedVector[i].isMatched == false) && (ObjectDetectedVector[j].isMatched == false))
 			{
 				// i is on left and  j is on right
-				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) &&
+				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 5) &&
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
-					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x >10) &&
+					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x >1) &&
 					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x <130))
 				{
 					if (rearRegion.contains(ObjectDetectedVector[i].centroid) || rearRegion.contains(ObjectDetectedVector[j].centroid)) 
 					{
-						if ((ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < 60)&&(abs(ObjectDetectedVector[i].area- ObjectDetectedVector[j].area)<10))
+						if ((ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < 70))//&&(abs(ObjectDetectedVector[i].area- ObjectDetectedVector[j].area)<10))
 						{
 							ObjectDetectedVector[i].isMatched = true;
 							ObjectDetectedVector[j].isMatched = true;
@@ -165,7 +165,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 						rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
 						rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
 						rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
-						cout << ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x << endl;
+						//cout << ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x << endl;
 					}
 				}
 			}
@@ -215,8 +215,8 @@ void ImageProcessor::extractEfficientImage(Mat& src)
 	{
 		for (unsigned int row = 0; row < src.rows; row++)//°ª
 		{
-			if(col- src.cols/3>row*8)
+			if((double(col)- double(src.cols/3)>row*8)|| (double(col) - double(src.cols / 3)>double(row*(-1) + src.rows) * 4))
 				src.at<uchar>(row, col) = 0;
 		}
-	}
+	}	
 }

@@ -13,7 +13,7 @@ using namespace std;
 using namespace cv;
 
 
-int main() {
+int main() {	
 	Mat src;
 	Mat rightSrc, leftSrc;
 	Mat rightDst, leftDst;
@@ -21,10 +21,10 @@ int main() {
 	Mat leftGrayRect, rightGrayRect;
 	Mat temp;
 	//string path = "C:/Users/User/Dropbox/AV1-20170710_193208.avi"; 
-	//string path = "C:/Users/User/Dropbox/쨢거/AV1-20170710_194208(0-1ㅐ34).avi";
+	string path = "C:/Users/User/Dropbox/쨢거/AV1-20170710_194208(0-1ㅐ34).avi";
 	//string path = "C:/Users/User/Dropbox/쨢거/AV1-20170710_192208.avi";
 	//string path = "C:/Users/User/Dropbox/쨢거/AV1-20170710_192708.avi";
-	string path = "E:/Dropbox/쨢거/AV1-20170710_192708.avi";
+	//string path = "E:/Dropbox/쨢거/AV1-20170710_192708.avi";
 	
 	
 	ImageProcessor imageProcessor;
@@ -70,26 +70,26 @@ int main() {
 		temp=rightGrayRect.clone();
 		
 
-		/*Rect rightFrontRect = Rect(0, rightGray.rows * 28 / 100, rightGray.cols *2/ 5, rightGray.rows * 5 / 12);
+		Rect rightFrontRect = Rect(0, rightGray.rows * 28 / 100, rightGray.cols *2/ 5, rightGray.rows * 5 / 12);
 		rectangle(rightSrc, rightFrontRect, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
 		
 		Rect rightRearRect = Rect(rightGray.cols*13/18 , rightGray.rows * 28 / 100, rightGrayRect.cols-rightGray.cols * 13 / 18, rightGray.rows * 5 / 12);
 		rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
 
 		imageProcessor.extractEfficientImage(temp);
-		//brightObjectSegment.getBinaryImage(temp);
-		imageProcessor.threshold_hist(temp);
+		brightObjectSegment.getBinaryImage(temp);
+		//imageProcessor.threshold_hist(temp);
 		imageProcessor.removeNoice(temp,5,5,10,10);
-		imageProcessor.detectLight(rightSrc, temp,0, rightGray.rows * 28 / 100, rightFrontRect, rightRearRect);*/
-
+		imageProcessor.detectLight(rightSrc, temp,0, rightGray.rows * 28 / 100, rightFrontRect, rightRearRect);
+		
 		
 
-
+		/*
 		//////
 		Mat rightHSV;
 		cvtColor(rightSrc, rightHSV, CV_BGR2HSV);
 		Mat rightHSVRect = rightHSV(rightRect);
-		imageProcessor.extractEfficientImage(rightHSVRect);
+
 		///////////
 		
 		
@@ -109,23 +109,23 @@ int main() {
 
 		mask = white.clone();// +yellow + orange;
 		imageProcessor.removeNoice(mask, 4, 4, 10, 10);
-		/*imshow("orange", orange);		
-		imshow("yellow", yellow);*/
+		imshow("orange", orange);		
+		imshow("yellow", yellow);
 		imshow("white", white);
 		imshow("Rightesult", mask);
 		
 		//rightHSVRect.copyTo(dst, mask);
 
 		imshow("HSV", rightHSVRect);
-
+		*/
 		
 				
 		
-		//imshow("Rightesult", rightGray);
+		imshow("Rightesult", rightGray);
 		imshow("Right Result", rightSrc);
-		//imshow("Right Binary", temp);		
+		imshow("Right Binary", temp);		
 		
-		//videoWriter << rightSrc;
+		videoWriter << rightSrc;
 		
 		waitKey(1);
 	}
