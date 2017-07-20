@@ -40,7 +40,18 @@ void ImageProcessor::removeNoice(Mat &src, int Eheight, int Ewidth,int Dheight,i
 	dilate(src, src, kernalCIRCLE);	
 }
 
-void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion, Rect rearRegion) {
+#include<fstream>
+void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion, Rect rearRegion) 
+{
+	char filename[] = "Position.txt";
+	fstream fp;
+	fp.open(filename, ios::app);//開啟檔案
+	if (!fp) {//如果開啟檔案失敗，fp為0；成功，fp為非0
+		cout << "Fail to open file: " << filename << endl;
+	}
+	
+	
+
 
 	Mat labelImg, stats, centroids;
 	int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
@@ -108,6 +119,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 	{
 		for (int j = 0; j < ObjectDetectedVector.size(); j++) 
 		{
+			//whether the objective is in upper postion
 			if((abs(ObjectDetectedVector[i].centroid.x- ObjectDetectedVector[j].centroid.x)<15)
 				&&(ObjectDetectedVector[i].centroid.y < ObjectDetectedVector[j].centroid.y)
 				&&((ObjectDetectedVector[i].upperPosition!=false)||(ObjectDetectedVector[j].upperPosition != false)))
@@ -139,14 +151,15 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 			if ((i != j) && (ObjectDetectedVector[i].isMatched == false) && (ObjectDetectedVector[j].isMatched == false))
 			{
 				// i is on left and  j is on right
-				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 5) &&
+				double carLightDistanse= ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x;
+				double carLeftingDistanse = ObjectDetectedVector[i].centroid.x + carLightDistanse / 2;
+				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) &&
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
-					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x >1) &&
-					(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x <130))
+					(carLightDistanse>1) /*&&(carLightDistanse<120))*/&&(-0.0301*carLightDistanse*carLightDistanse+0.8564*carLightDistanse+575.29>=carLeftingDistanse))
 				{
 					if (rearRegion.contains(ObjectDetectedVector[i].centroid) || rearRegion.contains(ObjectDetectedVector[j].centroid)) 
 					{
-						if ((ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < 70))//&&(abs(ObjectDetectedVector[i].area- ObjectDetectedVector[j].area)<10))
+						if (ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x < 70)
 						{
 							ObjectDetectedVector[i].isMatched = true;
 							ObjectDetectedVector[j].isMatched = true;
@@ -154,7 +167,18 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 							rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
 							rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
 							rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
-							//cout << ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x <<"  11111111111111111111111111111" <<endl;							
+
+							ostringstream strs;
+							strs << carLightDistanse;
+							string str = strs.str();	
+							ostringstream strs2;
+							strs2 << carLeftingDistanse;
+							string str2 = strs2.str();
+							putText(srcImg, str,CvPoint(carLeftingDistanse, ObjectDetectedVector[j].region.y),0,1, Scalar(0, 0, 255),2);
+							putText(srcImg, str2, CvPoint(carLeftingDistanse, ObjectDetectedVector[j].region.y - 25), 0, 1, Scalar(0, 0, 255), 2);
+
+							fp << carLightDistanse << "," << carLeftingDistanse << endl;
+						//	cout << carLightDistanse << endl;
 						}
 					}
 					else 
@@ -165,17 +189,39 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 						rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
 						rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
 						rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
-						//cout << ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x << endl;
+
+						ostringstream strs;
+						strs << carLightDistanse;
+						string str = strs.str();
+						ostringstream strs2;
+						strs2 << carLeftingDistanse;
+						string str2 = strs2.str();
+						putText(srcImg, str, CvPoint(carLeftingDistanse, ObjectDetectedVector[j].region.y), 0, 1, Scalar(0, 0, 255), 2);
+						putText(srcImg, str2, CvPoint(carLeftingDistanse, ObjectDetectedVector[j].region.y - 25), 0, 1, Scalar(0, 0, 255), 2);
+
+						fp << carLightDistanse << "," << carLeftingDistanse << endl;
+						//cout << carLightDistanse << endl;
 					}
 				}
 			}
+			/*if ((i != j) && (ObjectDetectedVector[i].isMatched == true) && (ObjectDetectedVector[j].isMatched == true)) 
+			{
+				cout << abs(ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x) << endl;				
+			}*/
 		}		
 		//determine isn't carlight from far position
 		if ((frontRegion.contains(ObjectDetectedVector[i].centroid)) && (ObjectDetectedVector[i].isMatched == false))
 		{
 			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 97, 255), 2);
 		}		
-	}	
+	}
+
+
+
+
+	fp.close();//關閉檔案
+
+
 }
 
 int ImageProcessor::thresholdValue(Mat& src)

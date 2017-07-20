@@ -48,7 +48,7 @@ int main() {
 	}
 
 	capture.set(CV_CAP_PROP_POS_FRAMES, 0);
-	
+	int frame = 0;
 	while (true)
 	{		
 		capture >> src;
@@ -119,15 +119,37 @@ int main() {
 		imshow("HSV", rightHSVRect);
 		*/
 		
-				
 		
-		imshow("Rightesult", rightGray);
+		imshow("Right Gray Result", rightGray);
 		imshow("Right Result", rightSrc);
-		imshow("Right Binary", temp);		
+		imshow("Right Binary Result", temp);		
 		
 		videoWriter << rightSrc;
 		
 		waitKey(1);
+		/*int key = waitKey(-1);
+		cout << key << endl;
+		if (key == 120)
+		{
+			
+			frame++;
+			//cout <<"frame:" <<frame << endl;
+			continue;
+		}
+		else if (key == 122)
+		{			
+			frame--;
+			if (frame < 0) 
+			{
+				frame = 0;
+			}
+			else 
+			{
+				capture.set(CV_CAP_PROP_POS_FRAMES, frame);
+				//cout << "frame:" << frame << endl;
+			}
+		}*/
 	}
+	
 	
 }
