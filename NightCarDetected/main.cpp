@@ -19,16 +19,17 @@ int main() {
 	Mat rightDst, leftDst;
 	Mat leftGray, rightGray;
 	Mat leftGrayRect, rightGrayRect;
-	Mat temp;
+	Mat rightGrayRectTemp;
 	//string path = "C:/Users/User/Dropbox/AV1-20170710_193208.avi"; 
-	string path = "C:/Users/User/Dropbox/已剪/AV1-20170710_194208(0-1分34).avi";
-	//string path = "C:/Users/User/Dropbox/已剪/AV1-20170710_192208.avi";
-	//string path = "C:/Users/User/Dropbox/已剪/AV1-20170710_192708.avi";
+	string path = "C:/Users/User/Dropbox/已剪/AV1-20170710_194208(0-1分34).avi";	
+	//string path = "C:/Users/User/Dropbox/已剪/AV1-20170718_195807.avi";
+	
 	//string path = "E:/Dropbox/已剪/AV1-20170710_192708.avi";
 	
 	
 	ImageProcessor imageProcessor;
 	CBrightObjectSegment brightObjectSegment(0.99);
+	CBrightObjectSegment brightObjectSegment2(0.985);
 
 	VideoWriter videoWriter;
 	VideoCapture capture(path);
@@ -61,38 +62,42 @@ int main() {
 		rightSrc = src(right);		
 		cvtColor(rightSrc, rightGray, CV_BGR2GRAY);
 
-
-
 		//right part
-		Rect rightRect = Rect(0, rightGray.rows*28/100, rightGray.cols*17/20 , rightGray.rows*5/12 );
-		rectangle(rightSrc, rightRect, Scalar(0, 255, 255), 1, 8, 0); // draw ROI
-		rightGrayRect = rightGray(rightRect);
-		temp=rightGrayRect.clone();
+		Rect rightROI = Rect(0, rightGray.rows*28/100, rightGray.cols*17/20 , rightGray.rows*5/12 );
+		rectangle(rightSrc, rightROI, Scalar(0, 255, 255), 1, 8, 0); // draw ROI
+		rightGrayRect = rightGray(rightROI);
+		rightGrayRectTemp = rightGrayRect.clone();
 		
-
-		Rect rightFrontRect = Rect(0, rightGray.rows * 28 / 100, rightGray.cols *2/ 5, rightGray.rows * 5 / 12);
+		const int rightFrontRectX = 0;
+		const int rightFrontRectY = rightGray.rows * 28 / 100; 
+		const int rightFrontRectWidth = rightGray.cols * 2 / 5;
+		const int rightFrontRectHeight = rightGray.rows * 5 / 12;		
+		Rect rightFrontRect = Rect(rightFrontRectX, rightFrontRectY, rightFrontRectWidth, rightFrontRectHeight);
 		rectangle(rightSrc, rightFrontRect, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
-		
-		Rect rightRearRect = Rect(rightGray.cols*13/18 , rightGray.rows * 28 / 100, rightGrayRect.cols-rightGray.cols * 13 / 18, rightGray.rows * 5 / 12);
-		rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI
+				
+		//const int rightRearRectX= rightGray.cols * 13 / 18;
+		//const int rightRearRectY= rightGray.rows * 28 / 100;
+		//const int rightRearRectWidth= rightGrayRect.cols - rightGray.cols * 13 / 18;
+		//const int rightRearRectHeight= rightGray.rows * 5 / 12;
+		//Rect rightRearRect = Rect(rightRearRectX, rightRearRectY, rightRearRectWidth, rightRearRectHeight);
+		//rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI		
 
-		imageProcessor.extractEfficientImage(temp);
-		brightObjectSegment.getBinaryImage(temp);
-		//imageProcessor.threshold_hist(temp);
-		imageProcessor.removeNoice(temp,5,5,10,10);
-		imageProcessor.detectLight(rightSrc, temp,0, rightGray.rows * 28 / 100, rightFrontRect, rightRearRect);
-		
-		
+		imageProcessor.extractEfficientImage(rightGrayRectTemp);
 
-		/*
-		//////
+		Rect rightMiddleROI = Rect(0,0, rightFrontRectWidth, rightFrontRectHeight);
+		Rect rightFrontROI = Rect(rightFrontRectWidth, 0, rightGray.cols * 17 / 20 -rightFrontRectWidth, rightFrontRectHeight);		
+		Mat rightMiddle =rightGrayRectTemp(rightMiddleROI);
+		Mat rightFront = rightGrayRectTemp(rightFrontROI);
+
+		brightObjectSegment.getBinaryImage(rightFront);
+		brightObjectSegment2.getBinaryImage(rightMiddle);
+		imageProcessor.removeNoice(rightGrayRectTemp,5,5,7,7);
+		imageProcessor.detectLight(rightSrc, rightGrayRectTemp,0, rightGray.rows * 28 / 100, rightFrontRect);
+		
+		/*		
 		Mat rightHSV;
 		cvtColor(rightSrc, rightHSV, CV_BGR2HSV);
-		Mat rightHSVRect = rightHSV(rightRect);
-
-		///////////
-		
-		
+		Mat rightHSVRect = rightHSV(rightRect);		
 		
 		Mat mask = Mat::zeros(rightHSVRect.rows, rightHSVRect.cols, CV_8U); //為了濾掉其他顏色
 		Mat orange;
@@ -100,13 +105,10 @@ int main() {
 		Mat white;
 		Mat dst;
 
-		
-
 		inRange(rightHSVRect, Scalar(11, 0, 46), Scalar(25, 70, 255), orange);
 		inRange(rightHSVRect, Scalar(26, 0, 46), Scalar(34, 70, 255), yellow);
 		inRange(rightHSVRect, Scalar(0, 0, 221), Scalar(180, 100, 255), white);
 		
-
 		mask = white.clone();// +yellow + orange;
 		imageProcessor.removeNoice(mask, 4, 4, 10, 10);
 		imshow("orange", orange);		
@@ -120,35 +122,33 @@ int main() {
 		*/
 		
 		
-		imshow("Right Gray Result", rightGray);
 		imshow("Right Result", rightSrc);
-		imshow("Right Binary Result", temp);		
+		imshow("Right Binary Result", rightGrayRectTemp);
 		
 		videoWriter << rightSrc;
 		
 		waitKey(1);
-		/*int key = waitKey(-1);
-		cout << key << endl;
-		if (key == 120)
-		{
-			
-			frame++;
-			//cout <<"frame:" <<frame << endl;
-			continue;
-		}
-		else if (key == 122)
-		{			
-			frame--;
-			if (frame < 0) 
-			{
-				frame = 0;
-			}
-			else 
-			{
-				capture.set(CV_CAP_PROP_POS_FRAMES, frame);
-				//cout << "frame:" << frame << endl;
-			}
-		}*/
+		//int key = waitKey(-1);		
+		//if (key == 120)
+		//{
+		//	
+		//	frame++;
+		//	//cout <<"frame:" <<frame << endl;
+		//	continue;
+		//}
+		//else if (key == 122)
+		//{			
+		//	frame--;
+		//	if (frame < 0) 
+		//	{
+		//		frame = 0;
+		//	}
+		//	else 
+		//	{
+		//		capture.set(CV_CAP_PROP_POS_FRAMES, frame);
+		//		//cout << "frame:" << frame << endl;
+		//	}
+		//}
 	}
 	
 	

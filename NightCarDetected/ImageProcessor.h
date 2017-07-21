@@ -21,11 +21,10 @@ public:
 	};
 	void threshold_hist(Mat& src);
 	void removeNoice(Mat &src, int Eheight, int Ewidth, int Dheight, int Dwidth);
-	void detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion, Rect rearRegion);
+	void detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion);
 	int thresholdValue(Mat& src);
 	void extractEfficientImage(Mat& src);	
-private:
-	static bool compareDistance(const ObjectDetected &a, const  ObjectDetected &b);
+private:	
 	vector<ObjectDetected> ObjectDetectedVector;
 	int previousThresholdValue = 0;
 };
