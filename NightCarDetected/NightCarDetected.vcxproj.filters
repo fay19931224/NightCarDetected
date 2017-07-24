@@ -27,6 +27,12 @@
     <ClCompile Include="CPartClass.cpp">
       <Filter>資源檔</Filter>
     </ClCompile>
+    <ClCompile Include="MotionEstimate.cpp">
+      <Filter>資源檔</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectTracker.cpp">
+      <Filter>資源檔</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -39,6 +45,12 @@
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="CPartClass.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="MotionEstimate.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectTracker.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
   </ItemGroup>

@@ -119,6 +119,8 @@
     <ClCompile Include="CPartClass.cpp" />
     <ClCompile Include="ImageProcessor.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MotionEstimate.cpp" />
+    <ClCompile Include="ObjectTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -127,6 +129,8 @@
     <ClInclude Include="CBrightObjectSegment.h" />
     <ClInclude Include="CPartClass.h" />
     <ClInclude Include="ImageProcessor.h" />
+    <ClInclude Include="MotionEstimate.h" />
+    <ClInclude Include="ObjectTracker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

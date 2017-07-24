@@ -1,5 +1,6 @@
 #include "ImageProcessor.h"
 
+
 ImageProcessor::ImageProcessor()
 {
 }
@@ -33,6 +34,16 @@ void ImageProcessor::removeNoice(Mat &src, int Eheight, int Ewidth,int Dheight,i
 	Mat kernalCIRCLE = getStructuringElement(MORPH_ELLIPSE, Size(Dheight, Dwidth));
 	erode(src, src, kernalELLIPSE);
 	dilate(src, src, kernalCIRCLE);	
+}
+
+vector<Rect2d> ImageProcessor::getHeadLightPairs()
+{
+	return headLightPairs;
+}
+
+void ImageProcessor::setTracker(ObjectTracker objectTracker)
+{
+	objectTracker = _objectTracker;
 }
 
 #include<fstream>
@@ -151,7 +162,31 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 				{
 					ObjectDetectedVector[i].isMatched = true;
 					ObjectDetectedVector[j].isMatched = true;
-					Rect rect = Rect(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
+					Rect2d rect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
+					
+					_objectTracker.initialize(rect, srcImg);
+
+					/*if (headLightPairs.size() == 0)
+					{
+						headLightPairs.push_back(rect);
+						_objectTracker.initialize(rect, srcImg);
+					}
+					else
+					{
+						if ((abs(headLightPairs[headLightPairs.size()-1].x - rect.x) > 10 || abs(headLightPairs[headLightPairs.size()-1].y - rect.y) > 2))
+						{
+							//_objectTracker.clearObject();
+							//headLightPairs.push_back(rect);
+							_objectTracker.initialize(Rect2d(rect.x, rect.y, rect.width, rect.height), srcImg);
+						}
+						else if (rect.x - headLightPairs[headLightPairs.size() - 1].x > 10 && rect.y - headLightPairs[headLightPairs.size() - 1].y > 10)
+						{
+							_objectTracker.initialize(Rect2d(rect.x, rect.y, rect.width, rect.height), srcImg);
+						}
+					}*/
+
+
+					
 					rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
 					rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
 					rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
@@ -180,7 +215,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 97, 255), 2);
 		}		
 	}
-
+	_objectTracker.update(srcImg);
 	fp.close();
 }
 

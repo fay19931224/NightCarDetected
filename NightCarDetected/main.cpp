@@ -9,6 +9,7 @@
 #include "OtsuMultiThreshold.h"
 #include "ImageProcessor.h"
 #include "CBrightObjectSegment.h"
+#include "ObjectTracker.h"
 using namespace std;
 using namespace cv;
 
@@ -20,14 +21,20 @@ int main() {
 	Mat leftGray, rightGray;
 	Mat leftGrayRect, rightGrayRect;
 	Mat rightGrayRectTemp;
-	//string path = "C:/Users/User/Dropbox/AV1-20170710_193208.avi"; 
-	string path = "C:/Users/User/Dropbox/쨢거/AV1-20170710_194208(0-1ㅐ34).avi";	
-	//string path = "C:/Users/User/Dropbox/쨢거/AV1-20170718_195807.avi";
 	
+
+	//string path = "C:/Users/User/Dropbox/AV1-20170710_193208.avi"; 
+	//string path = "C:/Users/User/Dropbox/쨢거/AV1-20170710_194208(0-1ㅐ34).avi";	
+	//string path = "C:/Users/User/Dropbox/쨢거/AV1-20170718_195807.avi";
+	string path = "C:/Users/HenryLiang/Desktop/AV1-20170710_194208(0-1ㅐ34).avi";
+
 	//string path = "E:/Dropbox/쨢거/AV1-20170710_192708.avi";
 	
 	
 	ImageProcessor imageProcessor;
+	ObjectTracker objectTracker;
+	imageProcessor.setTracker(objectTracker);
+
 	CBrightObjectSegment brightObjectSegment(0.99);
 	CBrightObjectSegment brightObjectSegment2(0.985);
 
@@ -93,6 +100,17 @@ int main() {
 		brightObjectSegment2.getBinaryImage(rightMiddle);
 		imageProcessor.removeNoice(rightGrayRectTemp,5,5,7,7);
 		imageProcessor.detectLight(rightSrc, rightGrayRectTemp,0, rightGray.rows * 28 / 100, rightFrontRect);
+		
+		vector<Rect2d> headLightPairs = imageProcessor.getHeadLightPairs();
+
+		for (int h = 0; h < headLightPairs.size(); h++)
+		{
+			cout << " index : " <<  h <<  " " << headLightPairs[h].x << " " << headLightPairs[h].y << endl;
+		}
+
+		objectTracker.update(rightSrc);
+		
+		
 		
 		/*		
 		Mat rightHSV;
