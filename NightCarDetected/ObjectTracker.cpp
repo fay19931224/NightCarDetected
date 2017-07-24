@@ -9,7 +9,7 @@ ObjectTracker::~ObjectTracker() {}
 
 void ObjectTracker::initialize(Rect2d startPos, Mat& srcImg)
 {
-	bool isDuplicate = false;
+	/*bool isScale = false;
 	if (_trackers.objects.size() == 0)
 	{
 		_headLights.push_back(startPos);
@@ -21,26 +21,26 @@ void ObjectTracker::initialize(Rect2d startPos, Mat& srcImg)
 		{
 			cout << "d : " << i << " " << startPos.x << " " << startPos.y << endl;
 			cout << "t : " << i << " " << _trackers.objects[i].x << " " << _trackers.objects[i].y << endl;
-			if ((abs(_trackers.objects[_trackers.objects.size() - 1].x - startPos.x) <= 10) &&
-				(abs(_trackers.objects[_trackers.objects.size() - 1].y - startPos.y) <= 5))
+			if ((_trackers.objects[i].x < startPos.x &&
+				_trackers.objects[i].x + _trackers.objects[i].width > startPos.x + startPos.width) ||
+				(abs(_trackers.objects[i].y - startPos.y) >= 1))
 			{
-				isDuplicate = true;
-				//clearObject();
+				isScale = true;
 				break;
 			}
 
 
 		}
-		if (!isDuplicate)
+		if (isScale)
 		{
-			_headLights.push_back(startPos);
-			_trackers.add(_trackingAlg, srcImg, startPos);
-		}
+			clearObject();
+		}*/
+
+		_headLights.push_back(startPos);
+		_trackers.add(_trackingAlg, srcImg, startPos);
 
 	}
 	
-	
-}
 
 void ObjectTracker::update(Mat& srcImg)
 {

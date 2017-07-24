@@ -41,6 +41,70 @@ vector<Rect2d> ImageProcessor::getHeadLightPairs()
 	return headLightPairs;
 }
 
+void ImageProcessor::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
+{
+	bool isNewPair = false;
+	bool isModify = false;
+	int intersactionCount = 0;
+
+	//cout << headLight.x << " " << headLight.y << endl;
+	if (headLightPairs.size() == 0)
+	{
+		isModify = true;
+		headLightPairs.push_back(headLight);
+	}
+	else
+	{
+		for (int i = 0; i < headLightPairs.size(); i++)
+		{
+			//determine whether new headlight is within the exist headlightpairs
+			/*if ((headLightPairs[i].x <= headLight.x && 
+				 headLightPairs[i].x + headLightPairs[i].width >= headLight.x + headLight.width))
+			{*/
+			if(headLight.contains(CvPoint(headLightPairs[i].x+ headLightPairs[i].width/2, headLightPairs[i].y+ headLightPairs[i].height/2)))
+			{
+				isModify = true;
+				//cout << isScale << endl;
+				headLightPairs.erase(headLightPairs.begin() + i);
+				headLightPairs.push_back(headLight);
+				break;
+			}
+		}
+
+		for (int i = 0; i < headLightPairs.size(); i++)
+		{
+			if ((headLightPairs[i] & headLight).area() == 0)
+			{
+				intersactionCount++;
+				cout << "intersactionCount:" << intersactionCount << endl;
+			}
+		}
+
+		if (intersactionCount == headLightPairs.size())
+		{
+			isNewPair = true;
+			isModify = true;
+			headLightPairs.push_back(headLight);
+		}
+
+	}
+
+
+
+	if (isModify)
+	{
+		for (int i = 0; i < headLightPairs.size(); i++)
+		{
+			cout << i << " " << headLightPairs[i].x << " " << headLightPairs[i].y << endl;
+			_objectTracker.clearObject();
+			_objectTracker.initialize(headLightPairs[i], srcImg);
+		}
+	}
+
+	
+	
+}
+
 void ImageProcessor::setTracker(ObjectTracker objectTracker)
 {
 	objectTracker = _objectTracker;
@@ -164,7 +228,18 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 					ObjectDetectedVector[j].isMatched = true;
 					Rect2d rect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
 					
-					_objectTracker.initialize(rect, srcImg);
+					
+
+					setHeadLightPairs(rect, srcImg);
+
+					/*vector<LightPair> myHeadLightPairs = getHeadLightPairs();
+
+					for (int h = 0; h < myHeadLightPairs.size(); h++)
+					{
+						cout << myHeadLightPairs[h].id << " " << myHeadLightPairs[h].headLight.x << " " << myHeadLightPairs[h].headLight.y << endl;
+						_objectTracker.initialize(myHeadLightPairs[h].headLight, srcImg);
+					}
+					*/
 
 					/*if (headLightPairs.size() == 0)
 					{

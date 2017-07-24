@@ -9,6 +9,7 @@
 
 using namespace cv;
 using namespace std;
+
 class ImageProcessor
 {
 public:
@@ -21,12 +22,14 @@ public:
 		bool upperPosition;
 		int area;
 	};
+
 	void threshold_hist(Mat& src);
 	void removeNoice(Mat &src, int Eheight, int Ewidth, int Dheight, int Dwidth);
 	void detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion);
 	int thresholdValue(Mat& src);
 	void extractEfficientImage(Mat& src);	
 	vector<Rect2d> getHeadLightPairs();
+	void setHeadLightPairs(Rect2d headLight, Mat& srcImg);
 	void setTracker(ObjectTracker objectTracker);
 private:	
 	vector<ObjectDetected> ObjectDetectedVector;

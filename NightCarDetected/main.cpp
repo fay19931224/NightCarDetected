@@ -26,7 +26,7 @@ int main() {
 	//string path = "C:/Users/User/Dropbox/AV1-20170710_193208.avi"; 
 	//string path = "C:/Users/User/Dropbox/已剪/AV1-20170710_194208(0-1分34).avi";	
 	//string path = "C:/Users/User/Dropbox/已剪/AV1-20170718_195807.avi";
-	string path = "C:/Users/HenryLiang/Desktop/AV1-20170710_194208(0-1分34).avi";
+	string path = "C:/Users/Henry/Desktop/華創/video/AV1-20170710_194208(0-1分34).avi";
 
 	//string path = "E:/Dropbox/已剪/AV1-20170710_192708.avi";
 	
@@ -103,12 +103,12 @@ int main() {
 		
 		vector<Rect2d> headLightPairs = imageProcessor.getHeadLightPairs();
 
-		for (int h = 0; h < headLightPairs.size(); h++)
+		/*for (int h = 0; h < headLightPairs.size(); h++)
 		{
-			cout << " index : " <<  h <<  " " << headLightPairs[h].x << " " << headLightPairs[h].y << endl;
-		}
+			cout << " index : " <<  h <<  " " << headLightPairs[h].headLight.x << " " << headLightPairs[h].headLight.y << endl;
+		}*/
 
-		objectTracker.update(rightSrc);
+		//objectTracker.update(rightSrc);
 		
 		
 		
@@ -145,7 +145,7 @@ int main() {
 		
 		videoWriter << rightSrc;
 		
-		waitKey(1);
+		waitKey(0);
 		//int key = waitKey(-1);		
 		//if (key == 120)
 		//{
