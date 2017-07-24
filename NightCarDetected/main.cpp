@@ -145,7 +145,7 @@ int main() {
 		
 		videoWriter << rightSrc;
 		
-		waitKey(0);
+		waitKey(1);
 		//int key = waitKey(-1);		
 		//if (key == 120)
 		//{

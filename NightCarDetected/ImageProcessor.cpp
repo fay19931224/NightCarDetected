@@ -46,7 +46,7 @@ void ImageProcessor::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 	bool isNewPair = false;
 	bool isModify = false;
 	int intersactionCount = 0;
-
+	cout << " " << headLight.x << " " << headLight.y << endl;
 	//cout << headLight.x << " " << headLight.y << endl;
 	if (headLightPairs.size() == 0)
 	{
@@ -57,10 +57,6 @@ void ImageProcessor::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 	{
 		for (int i = 0; i < headLightPairs.size(); i++)
 		{
-			//determine whether new headlight is within the exist headlightpairs
-			/*if ((headLightPairs[i].x <= headLight.x && 
-				 headLightPairs[i].x + headLightPairs[i].width >= headLight.x + headLight.width))
-			{*/
 			if(headLight.contains(CvPoint(headLightPairs[i].x+ headLightPairs[i].width/2, headLightPairs[i].y+ headLightPairs[i].height/2)))
 			{
 				isModify = true;
@@ -89,14 +85,11 @@ void ImageProcessor::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 
 	}
 
-
-
 	if (isModify)
 	{
+		_objectTracker.clearObject();
 		for (int i = 0; i < headLightPairs.size(); i++)
 		{
-			cout << i << " " << headLightPairs[i].x << " " << headLightPairs[i].y << endl;
-			_objectTracker.clearObject();
 			_objectTracker.initialize(headLightPairs[i], srcImg);
 		}
 	}
@@ -229,39 +222,9 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 					Rect2d rect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
 					
 					
-
+				
 					setHeadLightPairs(rect, srcImg);
 
-					/*vector<LightPair> myHeadLightPairs = getHeadLightPairs();
-
-					for (int h = 0; h < myHeadLightPairs.size(); h++)
-					{
-						cout << myHeadLightPairs[h].id << " " << myHeadLightPairs[h].headLight.x << " " << myHeadLightPairs[h].headLight.y << endl;
-						_objectTracker.initialize(myHeadLightPairs[h].headLight, srcImg);
-					}
-					*/
-
-					/*if (headLightPairs.size() == 0)
-					{
-						headLightPairs.push_back(rect);
-						_objectTracker.initialize(rect, srcImg);
-					}
-					else
-					{
-						if ((abs(headLightPairs[headLightPairs.size()-1].x - rect.x) > 10 || abs(headLightPairs[headLightPairs.size()-1].y - rect.y) > 2))
-						{
-							//_objectTracker.clearObject();
-							//headLightPairs.push_back(rect);
-							_objectTracker.initialize(Rect2d(rect.x, rect.y, rect.width, rect.height), srcImg);
-						}
-						else if (rect.x - headLightPairs[headLightPairs.size() - 1].x > 10 && rect.y - headLightPairs[headLightPairs.size() - 1].y > 10)
-						{
-							_objectTracker.initialize(Rect2d(rect.x, rect.y, rect.width, rect.height), srcImg);
-						}
-					}*/
-
-
-					
 					rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
 					rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
 					rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
