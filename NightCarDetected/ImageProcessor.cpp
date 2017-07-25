@@ -41,61 +41,70 @@ vector<Rect2d> ImageProcessor::getHeadLightPairs()
 	return headLightPairs;
 }
 
-void ImageProcessor::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
-{
+void ImageProcessor::setHeadLightPairs(carLightPair headLight, Mat& srcImg)
+{	
+	bool isScale = false;
 	bool isNewPair = false;
-	bool isModify = false;
-	int intersactionCount = 0;
-	cout << " " << headLight.x << " " << headLight.y << endl;
+	int nonIntersactionCount = 0;
+	//cout << " " << headLight.x << " " << headLight.y << endl;
 	//cout << headLight.x << " " << headLight.y << endl;
-	if (headLightPairs.size() == 0)
+	if (carLightPairVector.size() == 0)
 	{
-		isModify = true;
-		headLightPairs.push_back(headLight);
+		isNewPair = true;
+		//cout << "1size" << carLightPairVector.size() << std::endl;
+		carLightPairVector.push_back(headLight);
+		//cout << "2size" << carLightPairVector.size() << std::endl;
 	}
 	else
 	{
-		for (int i = 0; i < headLightPairs.size(); i++)
-		{
-			if(headLight.contains(CvPoint(headLightPairs[i].x+ headLightPairs[i].width/2, headLightPairs[i].y+ headLightPairs[i].height/2)))
+		//cout << "size" << carLightPairVector.size() << std::endl;
+		for (int i = 0; i < carLightPairVector.size(); i++)
+		{		
+			//if (headLight.region.contains(CvPoint(carLightPairVector[i].rectCenterX,carLightPairVector[i].rectCenterY)))
+			if ((carLightPairVector[i].region & headLight.region).area() != 0)
 			{
-				isModify = true;
-				//cout << isScale << endl;
-				headLightPairs.erase(headLightPairs.begin() + i);
-				headLightPairs.push_back(headLight);
+				
+				isScale = true;				
+				carLightPairVector.erase(carLightPairVector.begin() + i);
+				carLightPairVector.push_back(headLight);
 				break;
 			}
 		}
-
-		for (int i = 0; i < headLightPairs.size(); i++)
+		if (!isScale)
 		{
-			if ((headLightPairs[i] & headLight).area() == 0)
+			for (int i = 0; i < carLightPairVector.size(); i++)
 			{
-				intersactionCount++;
-				cout << "intersactionCount:" << intersactionCount << endl;
+				if ((carLightPairVector[i].region & headLight.region).area() == 0)
+				{
+					nonIntersactionCount++;
+					cout << "non-intersactionCount:" << nonIntersactionCount << endl;
+				}
+			}
+
+			if (nonIntersactionCount == carLightPairVector.size())
+			{
+				isNewPair = true;
+				carLightPairVector.push_back(headLight);
 			}
 		}
-
-		if (intersactionCount == headLightPairs.size())
-		{
-			isNewPair = true;
-			isModify = true;
-			headLightPairs.push_back(headLight);
-		}
-
 	}
 
-	if (isModify)
+	if (isScale)
 	{
 		_objectTracker.clearObject();
-		for (int i = 0; i < headLightPairs.size(); i++)
+		for (int i = 0; i < carLightPairVector.size(); i++)
 		{
-			_objectTracker.initialize(headLightPairs[i], srcImg);
+			cout << "S " << i << " " << carLightPairVector[i].region.x << " " << carLightPairVector[i].region.y << endl;
+			_objectTracker.addObject(carLightPairVector[i].region, srcImg);
 		}
 	}
+	else if (!isScale && isNewPair)
+	{
+		cout << "N " << headLight.region.x << " " << headLight.region.y << endl;
+		_objectTracker.addObject(headLight.region, srcImg);
+	}
 
-	
-	
+
 }
 
 void ImageProcessor::setTracker(ObjectTracker objectTracker)
@@ -106,6 +115,7 @@ void ImageProcessor::setTracker(ObjectTracker objectTracker)
 #include<fstream>
 void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion) 
 {
+	bool isModify = false;
 	char filename[] = "Position.txt";
 	fstream fp;
 	fp.open(filename, ios::app);//¶}±ÒÀÉ®×
@@ -116,7 +126,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 	Mat labelImg, stats, centroids;
 	int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
 	ObjectDetectedVector.clear();
-
+	//carLightPairVector.clear();
 	for (int label = 1; label < nLabels; ++label)
 	{
 		int width = stats.at<int>(label, CC_STAT_WIDTH);
@@ -213,7 +223,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 				const double carLightDistanse= ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x;
 				const double carLeftingDistanse = ObjectDetectedVector[i].centroid.x + carLightDistanse / 2;
 				const double carLightheightDiffY = ObjectDetectedVector[j].centroid.y - ObjectDetectedVector[i].centroid.y;
-				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) &&
+				if (isCarLightHeightDiffYCorrect(carLightheightDiffY, carLeftingDistanse) &&
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
 					(carLightDistanse>1) &&(-0.0301*carLightDistanse*carLightDistanse+0.8564*carLightDistanse+575.29>=carLeftingDistanse))
 				{
@@ -221,9 +231,9 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 					ObjectDetectedVector[j].isMatched = true;
 					Rect2d rect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
 					
+					carLightPair carlightpair{rect.x+rect.width/2,rect.y+rect.height/2,rect,false};
 					
-				
-					setHeadLightPairs(rect, srcImg);
+					setHeadLightPairs(carlightpair, srcImg);
 
 					rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
 					rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
@@ -245,14 +255,10 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 		//determine isn't carlight from far position
 		if ((frontRegion.contains(ObjectDetectedVector[i].centroid)) && (ObjectDetectedVector[i].isMatched == false))
 		{
-			/*ostringstream strs;
-			strs << ObjectDetectedVector[i].area;
-			string str = strs.str();
-			putText(srcImg, str, CvPoint(ObjectDetectedVector[i].region.x, ObjectDetectedVector[i].region.y - 25), 0, 1, Scalar(0, 0, 255), 2);*/
-
 			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 97, 255), 2);
 		}		
-	}
+	}	
+
 	_objectTracker.update(srcImg);
 	fp.close();
 }
@@ -298,4 +304,98 @@ void ImageProcessor::extractEfficientImage(Mat& src)
 				src.at<uchar>(row, col) = 0;
 		}
 	}	
+}
+bool ImageProcessor::isCarLightHeightDiffYCorrect(int diffY, int distance)
+{
+	switch (diffY)
+	{
+	case 3:
+		if (distance <= 450 && distance >= 215)
+			return true;
+		return false;
+		break;
+	case 2:
+		if (distance <= 505 && distance >= 240)
+			return true;
+		return false;
+		break;
+	case 1:
+		if (distance <= 570 && distance >= 235)
+			return true;
+		return false;
+		break;
+	case 0:
+		if (distance <= 580 && distance >= 160)
+			return true;
+		return false;
+		break;
+	case -1:
+		if (distance <= 575 && distance >= 335)
+			return true;
+		return false;
+		break;
+	case -2:
+		if (distance <= 575 && distance >= 240)
+			return true;
+		return false;
+		break;
+	case -3:
+		if (distance <= 535 && distance >= 380)
+			return true;
+		return false;
+		break;
+	case -4:
+		if (distance <= 470 && distance >= 370)
+			return true;
+		return false;
+		break;
+	case -5:
+		if (distance <= 420 && distance >= 380)
+			return true;
+		return false;
+		break;
+	case -6:
+		if (distance <= 335 && distance >= 310)
+			return true;
+		return false;
+		break;
+	case -7:
+		if (distance <= 315 && distance >= 280)
+			return true;
+		return false;
+		break;
+	case -8:
+		if (distance <= 300 && distance >= 245)
+			return true;
+		return false;
+		break;
+	case -9:
+		if (distance <= 245 && distance >= 220)
+			return true;
+		return false;
+		break;
+	case -10:
+		if (distance <= 225 && distance >= 205)
+			return true;
+		return false;
+	case -11:
+		if (distance <= 210 && distance >= 190)
+			return true;
+		return false;
+	case -12:
+		if (distance <= 210 && distance >= 190)
+			return true;
+		return false;
+	case -13:
+		if (distance <= 190 && distance >= 165)
+			return true;
+		return false;
+	case -14:
+		if (distance <= 165 && distance >= 150)
+			return true;
+		return false;
+	default:
+		return false;
+		break;
+	}
 }

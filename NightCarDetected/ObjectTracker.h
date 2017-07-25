@@ -14,7 +14,7 @@ class ObjectTracker
 public:
 	ObjectTracker();
 	~ObjectTracker();
-	void initialize(Rect2d startPos, Mat& srcImg);
+	void addObject(Rect2d startPos, Mat& srcImg);
 	void update(Mat& srcImg);
 	void clearObject();
 private:
