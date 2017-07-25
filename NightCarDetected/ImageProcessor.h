@@ -7,21 +7,25 @@
 #include <algorithm>
 #include "ObjectTracker.h"
 
+
 using namespace cv;
 using namespace std;
+
+
+struct ObjectDetected {
+	bool isMatched;
+	Rect region;
+	Point centroid;
+	bool upperPosition;
+	int area;
+};
 
 class ImageProcessor
 {
 public:
 	ImageProcessor();
 	~ImageProcessor();
-	struct ObjectDetected {
-		bool isMatched;
-		Rect region;
-		Point centroid;
-		bool upperPosition;
-		int area;
-	};
+
 
 	void threshold_hist(Mat& src);
 	void removeNoice(Mat &src, int Eheight, int Ewidth, int Dheight, int Dwidth);
@@ -30,12 +34,13 @@ public:
 	void extractEfficientImage(Mat& src);	
 	vector<Rect2d> getHeadLightPairs();
 	void setHeadLightPairs(Rect2d headLight, Mat& srcImg);
-	void setTracker(ObjectTracker objectTracker);
+	vector<ObjectDetected> getObjectDetectedVector();
+
 private:	
 	vector<ObjectDetected> ObjectDetectedVector;
 	vector<Rect2d> headLightPairs;
 	int previousThresholdValue = 0;
-	ObjectTracker _objectTracker;
+	vector<ObjectTracker> vectorOfObjectTracker;;
 };
 
 

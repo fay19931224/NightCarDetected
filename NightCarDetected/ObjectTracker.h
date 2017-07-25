@@ -16,10 +16,11 @@ public:
 	~ObjectTracker();
 	void initialize(Rect2d startPos, Mat& srcImg);
 	void update(Mat& srcImg);
-	void clearObject();
+	Rect2d getCurrentPos();
 private:
 	string _trackingAlg = "KCF";
-	MultiTracker _trackers;
-	vector<Ptr<Tracker>> _algorithms;
-	vector<Rect2d> _headLights;
+	//MultiTracker _trackers;
+	Ptr<Tracker> _tracker;
+	Rect2d _headLight;
+
 };

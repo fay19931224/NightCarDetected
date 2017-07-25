@@ -41,67 +41,42 @@ vector<Rect2d> ImageProcessor::getHeadLightPairs()
 	return headLightPairs;
 }
 
+vector<ObjectDetected> ImageProcessor::getObjectDetectedVector() 
+{
+	return ObjectDetectedVector;
+}
+
 void ImageProcessor::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 {
-	bool isNewPair = false;
-	bool isModify = false;
-	int intersactionCount = 0;
-	cout << " " << headLight.x << " " << headLight.y << endl;
-	//cout << headLight.x << " " << headLight.y << endl;
-	if (headLightPairs.size() == 0)
+	ObjectTracker objectTracker;
+	if (vectorOfObjectTracker.size() > 0)
 	{
-		isModify = true;
-		headLightPairs.push_back(headLight);
-	}
-	else
-	{
-		for (int i = 0; i < headLightPairs.size(); i++)
+		for (int i = 0; i < vectorOfObjectTracker.size(); i++)
 		{
-			if(headLight.contains(CvPoint(headLightPairs[i].x+ headLightPairs[i].width/2, headLightPairs[i].y+ headLightPairs[i].height/2)))
+			Rect2d currentTrackPos = vectorOfObjectTracker[i].getCurrentPos();
+
+			if ((currentTrackPos & headLight).area() > 0)
 			{
-				isModify = true;
-				//cout << isScale << endl;
-				headLightPairs.erase(headLightPairs.begin() + i);
-				headLightPairs.push_back(headLight);
-				break;
+				vectorOfObjectTracker.erase(vectorOfObjectTracker.begin() + i);
 			}
 		}
-
-		for (int i = 0; i < headLightPairs.size(); i++)
-		{
-			if ((headLightPairs[i] & headLight).area() == 0)
-			{
-				intersactionCount++;
-				cout << "intersactionCount:" << intersactionCount << endl;
-			}
-		}
-
-		if (intersactionCount == headLightPairs.size())
-		{
-			isNewPair = true;
-			isModify = true;
-			headLightPairs.push_back(headLight);
-		}
-
 	}
 
-	if (isModify)
+	objectTracker.initialize(headLight, srcImg);
+	vectorOfObjectTracker.push_back(objectTracker);
+		
+
+	cout << " Size: " << vectorOfObjectTracker.size() << endl;
+	for (int i = 0; i < vectorOfObjectTracker.size(); i++)
 	{
-		_objectTracker.clearObject();
-		for (int i = 0; i < headLightPairs.size(); i++)
-		{
-			_objectTracker.initialize(headLightPairs[i], srcImg);
-		}
+		Rect2d currentTrackPos = vectorOfObjectTracker[i].getCurrentPos();
+		cout << i << " " << currentTrackPos.x << " " << currentTrackPos.y << endl;
 	}
 
-	
+
 	
 }
 
-void ImageProcessor::setTracker(ObjectTracker objectTracker)
-{
-	objectTracker = _objectTracker;
-}
 
 #include<fstream>
 void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion) 
@@ -253,7 +228,22 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 97, 255), 2);
 		}		
 	}
-	_objectTracker.update(srcImg);
+
+	for (int i = 0; i < vectorOfObjectTracker.size(); i++)
+	{
+		Rect2d currentTrackPos = vectorOfObjectTracker[i].getCurrentPos();
+
+		if (currentTrackPos.x < 10)
+		{
+			vectorOfObjectTracker.erase(vectorOfObjectTracker.begin() + i);
+		}
+	}
+
+	for (int i = 0; i < vectorOfObjectTracker.size(); i++)
+	{
+		vectorOfObjectTracker[i].update(srcImg);
+	}
+	
 	fp.close();
 }
 

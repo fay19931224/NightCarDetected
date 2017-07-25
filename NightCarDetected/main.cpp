@@ -9,7 +9,7 @@
 #include "OtsuMultiThreshold.h"
 #include "ImageProcessor.h"
 #include "CBrightObjectSegment.h"
-#include "ObjectTracker.h"
+
 using namespace std;
 using namespace cv;
 
@@ -32,8 +32,6 @@ int main() {
 	
 	
 	ImageProcessor imageProcessor;
-	ObjectTracker objectTracker;
-	imageProcessor.setTracker(objectTracker);
 
 	CBrightObjectSegment brightObjectSegment(0.99);
 	CBrightObjectSegment brightObjectSegment2(0.985);
@@ -108,7 +106,6 @@ int main() {
 			cout << " index : " <<  h <<  " " << headLightPairs[h].headLight.x << " " << headLightPairs[h].headLight.y << endl;
 		}*/
 
-		//objectTracker.update(rightSrc);
 		
 		
 		
