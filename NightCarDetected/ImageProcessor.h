@@ -5,42 +5,39 @@
 #include <opencv2\imgproc\imgproc.hpp>
 #include <vector>
 #include <algorithm>
-#include "ObjectTracker.h"
+#include "HeadLightManager.h"
+#include "ObjectDetected.h"
 
 
 using namespace cv;
 using namespace std;
 
 
-struct ObjectDetected {
+/*struct ObjectDetected {
 	bool isMatched;
 	Rect region;
 	Point centroid;
 	bool upperPosition;
 	int area;
-};
+};*/
 
 class ImageProcessor
 {
 public:
 	ImageProcessor();
 	~ImageProcessor();
-
-
 	void threshold_hist(Mat& src);
 	void removeNoice(Mat &src, int Eheight, int Ewidth, int Dheight, int Dwidth);
 	void detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion);
 	int thresholdValue(Mat& src);
-	void extractEfficientImage(Mat& src);	
-	vector<Rect2d> getHeadLightPairs();
-	void setHeadLightPairs(Rect2d headLight, Mat& srcImg);
+	void extractEfficientImage(Mat& src);
+	void setHeadLightManager(HeadLightManager headLightManager);
 	vector<ObjectDetected> getObjectDetectedVector();
-
+	bool isCarLightHeightDiffYCorrect(int diffY, int distance);
 private:	
 	vector<ObjectDetected> ObjectDetectedVector;
-	vector<Rect2d> headLightPairs;
 	int previousThresholdValue = 0;
-	vector<ObjectTracker> vectorOfObjectTracker;;
+	HeadLightManager _headLightManager;
 };
 
 

@@ -117,6 +117,7 @@
   <ItemGroup>
     <ClCompile Include="CBrightObjectSegment.cpp" />
     <ClCompile Include="CPartClass.cpp" />
+    <ClCompile Include="HeadLightManager.cpp" />
     <ClCompile Include="ImageProcessor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MotionEstimate.cpp" />
@@ -128,8 +129,10 @@
   <ItemGroup>
     <ClInclude Include="CBrightObjectSegment.h" />
     <ClInclude Include="CPartClass.h" />
+    <ClInclude Include="HeadLightManager.h" />
     <ClInclude Include="ImageProcessor.h" />
     <ClInclude Include="MotionEstimate.h" />
+    <ClInclude Include="ObjectDetected.h" />
     <ClInclude Include="ObjectTracker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

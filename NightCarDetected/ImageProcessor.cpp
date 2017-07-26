@@ -1,5 +1,6 @@
 #include "ImageProcessor.h"
 
+#define ENABLE_TRACKER
 
 ImageProcessor::ImageProcessor()
 {
@@ -7,6 +8,11 @@ ImageProcessor::ImageProcessor()
 
 ImageProcessor::~ImageProcessor()
 {
+}
+
+void ImageProcessor::setHeadLightManager(HeadLightManager headLightManager)
+{
+	_headLightManager = headLightManager;
 }
 
 void ImageProcessor::threshold_hist(Mat& src)
@@ -36,46 +42,12 @@ void ImageProcessor::removeNoice(Mat &src, int Eheight, int Ewidth,int Dheight,i
 	dilate(src, src, kernalCIRCLE);	
 }
 
-vector<Rect2d> ImageProcessor::getHeadLightPairs()
-{
-	return headLightPairs;
-}
 
 vector<ObjectDetected> ImageProcessor::getObjectDetectedVector() 
 {
 	return ObjectDetectedVector;
 }
 
-void ImageProcessor::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
-{
-	ObjectTracker objectTracker;
-	if (vectorOfObjectTracker.size() > 0)
-	{
-		for (int i = 0; i < vectorOfObjectTracker.size(); i++)
-		{
-			Rect2d currentTrackPos = vectorOfObjectTracker[i].getCurrentPos();
-
-			if ((currentTrackPos & headLight).area() > 0)
-			{
-				vectorOfObjectTracker.erase(vectorOfObjectTracker.begin() + i);
-			}
-		}
-	}
-
-	objectTracker.initialize(headLight, srcImg);
-	vectorOfObjectTracker.push_back(objectTracker);
-		
-
-	cout << " Size: " << vectorOfObjectTracker.size() << endl;
-	for (int i = 0; i < vectorOfObjectTracker.size(); i++)
-	{
-		Rect2d currentTrackPos = vectorOfObjectTracker[i].getCurrentPos();
-		cout << i << " " << currentTrackPos.x << " " << currentTrackPos.y << endl;
-	}
-
-
-	
-}
 
 
 #include<fstream>
@@ -188,17 +160,18 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 				const double carLightDistanse= ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x;
 				const double carLeftingDistanse = ObjectDetectedVector[i].centroid.x + carLightDistanse / 2;
 				const double carLightheightDiffY = ObjectDetectedVector[j].centroid.y - ObjectDetectedVector[i].centroid.y;
-				if ((abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y) < 10) &&
+				if ((isCarLightHeightDiffYCorrect(carLightheightDiffY, carLeftingDistanse) &&
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
-					(carLightDistanse>1) &&(-0.0301*carLightDistanse*carLightDistanse+0.8564*carLightDistanse+575.29>=carLeftingDistanse))
+					(carLightDistanse>1) &&(-0.0301*carLightDistanse*carLightDistanse+0.8564*carLightDistanse+575.29>=carLeftingDistanse)))
 				{
 					ObjectDetectedVector[i].isMatched = true;
 					ObjectDetectedVector[j].isMatched = true;
 					Rect2d rect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
 					
 					
-				
-					setHeadLightPairs(rect, srcImg);
+# ifdef ENABLE_TRACKER
+					_headLightManager.setHeadLightPairs(rect, srcImg);
+# endif
 
 					rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
 					rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
@@ -229,21 +202,11 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 		}		
 	}
 
-	for (int i = 0; i < vectorOfObjectTracker.size(); i++)
-	{
-		Rect2d currentTrackPos = vectorOfObjectTracker[i].getCurrentPos();
 
-		if (currentTrackPos.x < 10)
-		{
-			vectorOfObjectTracker.erase(vectorOfObjectTracker.begin() + i);
-		}
-	}
-
-	for (int i = 0; i < vectorOfObjectTracker.size(); i++)
-	{
-		vectorOfObjectTracker[i].update(srcImg);
-	}
-	
+# ifdef ENABLE_TRACKER
+	_headLightManager.setLightObjects(ObjectDetectedVector);
+	_headLightManager.updateHeadLightPairs(srcImg);
+# endif
 	fp.close();
 }
 
@@ -288,4 +251,100 @@ void ImageProcessor::extractEfficientImage(Mat& src)
 				src.at<uchar>(row, col) = 0;
 		}
 	}	
+}
+
+
+bool ImageProcessor::isCarLightHeightDiffYCorrect(int diffY, int distance)
+{
+	switch (diffY)
+	{
+	case 3:
+		if (distance <= 450 && distance >= 215)
+			return true;
+		return false;
+		break;
+	case 2:
+		if (distance <= 505 && distance >= 240)
+			return true;
+		return false;
+		break;
+	case 1:
+		if (distance <= 570 && distance >= 235)
+			return true;
+		return false;
+		break;
+	case 0:
+		if (distance <= 580 && distance >= 160)
+			return true;
+		return false;
+		break;
+	case -1:
+		if (distance <= 575 && distance >= 335)
+			return true;
+		return false;
+		break;
+	case -2:
+		if (distance <= 575 && distance >= 240)
+			return true;
+		return false;
+		break;
+	case -3:
+		if (distance <= 535 && distance >= 380)
+			return true;
+		return false;
+		break;
+	case -4:
+		if (distance <= 470 && distance >= 370)
+			return true;
+		return false;
+		break;
+	case -5:
+		if (distance <= 420 && distance >= 380)
+			return true;
+		return false;
+		break;
+	case -6:
+		if (distance <= 335 && distance >= 310)
+			return true;
+		return false;
+		break;
+	case -7:
+		if (distance <= 315 && distance >= 280)
+			return true;
+		return false;
+		break;
+	case -8:
+		if (distance <= 300 && distance >= 245)
+			return true;
+		return false;
+		break;
+	case -9:
+		if (distance <= 245 && distance >= 220)
+			return true;
+		return false;
+		break;
+	case -10:
+		if (distance <= 225 && distance >= 205)
+			return true;
+		return false;
+	case -11:
+		if (distance <= 210 && distance >= 190)
+			return true;
+		return false;
+	case -12:
+		if (distance <= 210 && distance >= 190)
+			return true;
+		return false;
+	case -13:
+		if (distance <= 190 && distance >= 165)
+			return true;
+		return false;
+	case -14:
+		if (distance <= 165 && distance >= 150)
+			return true;
+		return false;
+	default:
+		return false;
+		break;
+	}
 }

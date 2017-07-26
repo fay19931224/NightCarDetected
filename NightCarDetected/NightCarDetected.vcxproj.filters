@@ -33,6 +33,9 @@
     <ClCompile Include="ObjectTracker.cpp">
       <Filter>資源檔</Filter>
     </ClCompile>
+    <ClCompile Include="HeadLightManager.cpp">
+      <Filter>資源檔</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -52,6 +55,12 @@
     </ClInclude>
     <ClInclude Include="ObjectTracker.h">
       <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="HeadLightManager.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectDetected.h">
+      <Filter>資源檔</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

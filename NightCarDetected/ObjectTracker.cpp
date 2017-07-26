@@ -11,9 +11,6 @@ void ObjectTracker::initialize(Rect2d startPos, Mat& srcImg)
 	_headLight = startPos;
 	_tracker = Tracker::create(_trackingAlg);
 	_tracker->init(srcImg, _headLight);
-	
-	//cout << _headLight.x << " " << _headLight.y << endl;
-	//_trackers.add(_trackingAlg, srcImg, startPos);
 }
 	
 
@@ -29,5 +26,20 @@ void ObjectTracker::update(Mat& srcImg)
 Rect2d ObjectTracker::getCurrentPos()
 {
 	return _headLight;
+}
+
+void ObjectTracker::addObjectContain()
+{
+	_objectContainCount++;
+}
+
+int ObjectTracker::getNumberOfObjectContain()
+{
+	return _objectContainCount;
+}
+
+void ObjectTracker::clearObjectContain()
+{
+	_objectContainCount = 0;
 }
 

@@ -98,17 +98,7 @@ int main() {
 		brightObjectSegment2.getBinaryImage(rightMiddle);
 		imageProcessor.removeNoice(rightGrayRectTemp,5,5,7,7);
 		imageProcessor.detectLight(rightSrc, rightGrayRectTemp,0, rightGray.rows * 28 / 100, rightFrontRect);
-		
-		vector<Rect2d> headLightPairs = imageProcessor.getHeadLightPairs();
 
-		/*for (int h = 0; h < headLightPairs.size(); h++)
-		{
-			cout << " index : " <<  h <<  " " << headLightPairs[h].headLight.x << " " << headLightPairs[h].headLight.y << endl;
-		}*/
-
-		
-		
-		
 		/*		
 		Mat rightHSV;
 		cvtColor(rightSrc, rightHSV, CV_BGR2HSV);

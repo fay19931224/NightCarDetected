@@ -5,7 +5,6 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <cstring>
-#include <ctime>
 
 using namespace cv;
 using namespace std;
@@ -17,10 +16,12 @@ public:
 	void initialize(Rect2d startPos, Mat& srcImg);
 	void update(Mat& srcImg);
 	Rect2d getCurrentPos();
+	void addObjectContain();
+	int getNumberOfObjectContain();
+	void clearObjectContain();
 private:
 	string _trackingAlg = "KCF";
-	//MultiTracker _trackers;
 	Ptr<Tracker> _tracker;
 	Rect2d _headLight;
-
+	int _objectContainCount = 0;
 };
