@@ -19,7 +19,13 @@ void ObjectTracker::update(Mat& srcImg)
 	_tracker->update(srcImg, _headLight);
 
 	// draw the tracked object
-	rectangle(srcImg, _headLight, Scalar(255, 0, 0), 1, 1);
+	Rect2d extHeadLight;
+	extHeadLight.x = _headLight.x - 5;
+	extHeadLight.y = _headLight.y - 5;
+	extHeadLight.width = _headLight.width + 10;
+	extHeadLight.height = _headLight.height + 10;
+
+	rectangle(srcImg, extHeadLight, Scalar(255, 0, 0), 2, 1);
 		
 }
 
