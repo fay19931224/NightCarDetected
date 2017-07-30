@@ -1,6 +1,6 @@
 #include "ImageProcessor.h"
 
-#define ENABLE_TRACKER
+//#define ENABLE_TRACKER
 
 ImageProcessor::ImageProcessor()
 {
@@ -162,7 +162,9 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 				const double carLightheightDiffY = ObjectDetectedVector[j].centroid.y - ObjectDetectedVector[i].centroid.y;
 				if ((isCarLightHeightDiffYCorrect(carLightheightDiffY, carLeftingDistanse) &&
 					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
-					(carLightDistanse>1) &&(-0.0301*carLightDistanse*carLightDistanse+0.8564*carLightDistanse+575.29>=carLeftingDistanse)))
+					(-0.0005*pow(carLightDistanse, 3) + 0.1379*pow(carLightDistanse, 2) - 14.055*carLightDistanse + 679.14 <= carLeftingDistanse)
+					&&(-0.0301*pow(carLightDistanse, 2) +0.8564*carLightDistanse+575.29>=carLeftingDistanse)))
+					
 				{
 					ObjectDetectedVector[i].isMatched = true;
 					ObjectDetectedVector[j].isMatched = true;
@@ -178,7 +180,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 					rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
 
 					ostringstream strs;
-					strs << carLightheightDiffY;
+					strs << carLightDistanse;
 					string str = strs.str();
 					ostringstream strs2;
 					strs2 << carLeftingDistanse;

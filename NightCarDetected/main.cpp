@@ -26,9 +26,9 @@ int main() {
 	//string path = "C:/Users/User/Dropbox/AV1-20170710_193208.avi"; 
 	//string path = "C:/Users/User/Dropbox/已剪/AV1-20170710_194208(0-1分34).avi";	
 	//string path = "C:/Users/User/Dropbox/已剪/AV1-20170718_195807.avi";
-	string path = "C:/Users/Henry/Desktop/華創/video/AV1-20170710_194208(0-1分34).avi";
+	//string path = "C:/Users/Henry/Desktop/華創/video/AV1-20170710_194208(0-1分34).avi";
 
-	//string path = "E:/Dropbox/已剪/AV1-20170710_192708.avi";
+	string path = "E:/Dropbox/已剪/AV1-20170710_194208(0-1分34).avi";
 	
 	
 	ImageProcessor imageProcessor;
@@ -131,29 +131,34 @@ int main() {
 		imshow("Right Binary Result", rightGrayRectTemp);
 		
 		videoWriter << rightSrc;
-		
-		waitKey(1);
-		//int key = waitKey(-1);		
-		//if (key == 120)
-		//{
-		//	
-		//	frame++;
-		//	//cout <<"frame:" <<frame << endl;
-		//	continue;
-		//}
-		//else if (key == 122)
-		//{			
-		//	frame--;
-		//	if (frame < 0) 
-		//	{
-		//		frame = 0;
-		//	}
-		//	else 
-		//	{
-		//		capture.set(CV_CAP_PROP_POS_FRAMES, frame);
-		//		//cout << "frame:" << frame << endl;
-		//	}
-		//}
+		switch (1) {
+			case 1:
+				waitKey(1);
+				break;
+			case 0:
+				int key = waitKey(-1);
+				if (key == 120)
+				{
+
+					frame++;
+					//cout <<"frame:" <<frame << endl;
+					continue;
+				}
+				else if (key == 122)
+				{
+					frame--;
+					if (frame < 0)
+					{
+						frame = 0;
+					}
+					else
+					{
+						capture.set(CV_CAP_PROP_POS_FRAMES, frame);
+						//cout << "frame:" << frame << endl;
+					}
+				}
+				break;
+		}		
 	}
 	
 	
