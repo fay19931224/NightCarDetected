@@ -12,8 +12,8 @@ void HeadLightManager::setLightObjects(vector<ObjectDetected> lightObjects)
 void HeadLightManager::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 {
 	ObjectTracker objectTracker;
-	if (_vectorOfObjectTracker.size() > 0)
-	{
+	//if (_vectorOfObjectTracker.size() > 0)
+	//{
 		for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
 		{
 			Rect2d currentTrackPos = _vectorOfObjectTracker[i].getCurrentPos();
@@ -23,7 +23,7 @@ void HeadLightManager::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 				_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
 			}
 		}
-	}
+	//}
 
 	objectTracker.initialize(headLight, srcImg);
 	_vectorOfObjectTracker.push_back(objectTracker);

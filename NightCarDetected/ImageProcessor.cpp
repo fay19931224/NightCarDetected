@@ -1,6 +1,6 @@
 #include "ImageProcessor.h"
 
-//#define ENABLE_TRACKER
+#define ENABLE_TRACKER
 
 ImageProcessor::ImageProcessor()
 {
@@ -199,7 +199,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 			strs << ObjectDetectedVector[i].area;
 			string str = strs.str();
 			putText(srcImg, str, CvPoint(ObjectDetectedVector[i].region.x, ObjectDetectedVector[i].region.y - 25), 0, 1, Scalar(0, 0, 255), 2);*/
-
+			_headLightManager.setHeadLightPairs(ObjectDetectedVector[i].region, srcImg);
 			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 97, 255), 2);
 		}		
 	}
