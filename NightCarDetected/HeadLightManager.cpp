@@ -12,18 +12,18 @@ void HeadLightManager::setLightObjects(vector<ObjectDetected> lightObjects)
 void HeadLightManager::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 {
 	ObjectTracker objectTracker;
-	//if (_vectorOfObjectTracker.size() > 0)
-	//{
-		for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
-		{
-			Rect2d currentTrackPos = _vectorOfObjectTracker[i].getCurrentPos();
 
-			if ((currentTrackPos & headLight).area() > 0)
-			{
-				_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
-			}
+
+	for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
+	{
+		Rect2d currentTrackPos = _vectorOfObjectTracker[i].getCurrentPos();
+
+		if ((currentTrackPos & headLight).area() > 0)
+		{
+			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
 		}
-	//}
+	}
+
 
 	objectTracker.initialize(headLight, srcImg);
 	_vectorOfObjectTracker.push_back(objectTracker);
@@ -47,7 +47,8 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg)
 	{
 		Rect2d currentTrackPos = _vectorOfObjectTracker[i].getCurrentPos();
 
-		if (currentTrackPos.x < 10)
+		if (currentTrackPos.x < 10 || currentTrackPos.y < 10 ||
+			currentTrackPos.x > srcImg.cols || currentTrackPos.y > srcImg.rows)
 		{
 			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
 		}
@@ -74,25 +75,16 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg)
 	}
 
 	//cout << " Size: " << _vectorOfObjectTracker.size() << endl;
-	if (_vectorOfObjectTracker.size() > 0)
-	{
-		//cout << trackIndex << endl;
 
-		for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
+	for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
+	{
+		cout << i << " " << _vectorOfObjectTracker[i].getNumberOfObjectContain() << endl;
+		if (_vectorOfObjectTracker[i].getNumberOfObjectContain() == 0)
 		{
-			cout << i << " " << _vectorOfObjectTracker[i].getNumberOfObjectContain() << endl;
-			if (_vectorOfObjectTracker[i].getNumberOfObjectContain() == 0)
-			{
-				_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
-			}
-			
+			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
 		}
 
-		
 	}
-	
-
-
 
 	//update
 	for (int i = 0; i < _vectorOfObjectTracker.size(); i++)

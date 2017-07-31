@@ -26,9 +26,9 @@ int main() {
 	//string path = "C:/Users/User/Dropbox/AV1-20170710_193208.avi"; 
 	//string path = "C:/Users/User/Dropbox/已剪/AV1-20170710_194208(0-1分34).avi";	
 	//string path = "C:/Users/User/Dropbox/已剪/AV1-20170718_195807.avi";
-	//string path = "C:/Users/Henry/Desktop/華創/video/AV1-20170710_194208(0-1分34).avi";
+	string path = "C:/Users/Henry/Desktop/華創/video/AV1-20170710_194208(0-1分34).avi";
 
-	string path = "E:/Dropbox/已剪/AV1-20170710_194208(0-1分34).avi";
+	//string path = "E:/Dropbox/已剪/AV1-20170710_194208(0-1分34).avi";
 	
 	
 	ImageProcessor imageProcessor;
