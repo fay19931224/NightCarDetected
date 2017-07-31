@@ -61,18 +61,21 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 	}
 	
 	Mat labelImg, stats, centroids;
-	int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
+	const int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
 	ObjectDetectedVector.clear();
 
+
+	//extract meaningful component
 	for (int label = 1; label < nLabels; ++label)
 	{
-		int width = stats.at<int>(label, CC_STAT_WIDTH);
-		int height = stats.at<int>(label, CC_STAT_HEIGHT);
-		int area = stats.at<int>(label, CC_STAT_AREA);
-		int left = stats.at<int>(label, CC_STAT_LEFT) + offsetX;
-		int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
+		const int width = stats.at<int>(label, CC_STAT_WIDTH);
+		const int height = stats.at<int>(label, CC_STAT_HEIGHT);
+		const int area = stats.at<int>(label, CC_STAT_AREA);
+		const int left = stats.at<int>(label, CC_STAT_LEFT) + offsetX;
+		const int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
-		if (area < 2000) 
+		const double HeightWidthRatio = static_cast<double>(height) / static_cast<double>(width);
+		if (area < 2000&& HeightWidthRatio<=2)
 		{
 			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid ,true ,area };
 			ObjectDetectedVector.push_back(objectDetected);
@@ -123,7 +126,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 	}
 	
 
-	//whether the objective is in upper postion
+	//extract the object in upper postion
 	for (int i = 0; i < ObjectDetectedVector.size(); i++)
 	{
 		for (int j = 0; j < ObjectDetectedVector.size(); j++) 
@@ -149,7 +152,8 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 			it++;
 		}
 	}	
-	
+
+	//match carlight
 	for (int i = 0; i < ObjectDetectedVector.size(); i++)
 	{		
 		for (int j = 0; j < ObjectDetectedVector.size(); j++)
@@ -169,8 +173,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 					ObjectDetectedVector[i].isMatched = true;
 					ObjectDetectedVector[j].isMatched = true;
 					Rect2d rect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
-					
-					
+										
 # ifdef ENABLE_TRACKER
 					_headLightManager.setHeadLightPairs(rect, srcImg);
 # endif

@@ -13,15 +13,21 @@ void HeadLightManager::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 {
 	ObjectTracker objectTracker;
 
-
+	int intersactionArea = 0;
+	int flag = -1;
 	for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
 	{
 		Rect2d currentTrackPos = _vectorOfObjectTracker[i].getCurrentPos();
-
-		if ((currentTrackPos & headLight).area() > 0)
+		//ckeck which object occupuies the most area
+		if ((currentTrackPos & headLight).area() > intersactionArea)
 		{
-			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
+			flag = i;
+			intersactionArea = (currentTrackPos & headLight).area();			
 		}
+	}
+	if (_vectorOfObjectTracker.size() > 0 && (flag != -1))
+	{
+		_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + flag);
 	}
 
 
@@ -42,6 +48,7 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg)
 {
 	//bool isTrack = false;
 	//int trackIndex;
+
 	//check whether tracker is out of detect window or not
 	for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
 	{
