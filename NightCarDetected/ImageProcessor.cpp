@@ -64,7 +64,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 	const int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
 	ObjectDetectedVector.clear();
 
-
+	Mat srcTemp = srcImg.clone();
 	//extract meaningful component
 	for (int label = 1; label < nLabels; ++label)
 	{
@@ -172,13 +172,13 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 				{
 					ObjectDetectedVector[i].isMatched = true;
 					ObjectDetectedVector[j].isMatched = true;
-					Rect2d rect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
+					Rect2d carLightRect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
 										
 # ifdef ENABLE_TRACKER
-					_headLightManager.setHeadLightPairs(rect, srcImg);
+					_headLightManager.setHeadLightPairs(carLightRect, srcImg);
 # endif
 
-					rectangle(srcImg, rect, Scalar(0, 0, 255), 2);
+					rectangle(srcImg, carLightRect, Scalar(0, 0, 255), 2);
 					rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(255, 255, 0), 2);
 					rectangle(srcImg, ObjectDetectedVector[j].region, Scalar(255, 255, 0), 2);
 
@@ -202,7 +202,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 			strs << ObjectDetectedVector[i].area;
 			string str = strs.str();
 			putText(srcImg, str, CvPoint(ObjectDetectedVector[i].region.x, ObjectDetectedVector[i].region.y - 25), 0, 1, Scalar(0, 0, 255), 2);*/
-			_headLightManager.setHeadLightPairs(ObjectDetectedVector[i].region, srcImg);
+			//_headLightManager.setHeadLightPairs(ObjectDetectedVector[i].region, srcImg);
 			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 97, 255), 2);
 		}		
 	}
@@ -210,7 +210,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 
 # ifdef ENABLE_TRACKER
 	_headLightManager.setLightObjects(ObjectDetectedVector);
-	_headLightManager.updateHeadLightPairs(srcImg);
+	_headLightManager.updateHeadLightPairs(srcImg, srcTemp);
 # endif
 	fp.close();
 }

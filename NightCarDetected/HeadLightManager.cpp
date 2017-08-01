@@ -21,14 +21,15 @@ void HeadLightManager::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 		//ckeck which object occupuies the most area
 		if ((currentTrackPos & headLight).area() > intersactionArea)
 		{
-			flag = i;
-			intersactionArea = (currentTrackPos & headLight).area();			
+			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
+			/*flag = i;
+			intersactionArea = (currentTrackPos & headLight).area();*/
 		}
 	}
-	if (_vectorOfObjectTracker.size() > 0 && (flag != -1))
+	/*if (_vectorOfObjectTracker.size() > 0 && (flag != -1))
 	{
 		_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + flag);
-	}
+	}*/
 
 
 	objectTracker.initialize(headLight, srcImg);
@@ -44,7 +45,7 @@ void HeadLightManager::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 }
 
 
-void HeadLightManager::updateHeadLightPairs(Mat& srcImg)
+void HeadLightManager::updateHeadLightPairs(Mat& srcImg, Mat srcTemp)
 {
 	//bool isTrack = false;
 	//int trackIndex;
@@ -65,16 +66,16 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg)
 	for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
 	{
 		Rect2d currentTrackPos = _vectorOfObjectTracker[i].getCurrentPos();
+
 		_vectorOfObjectTracker[i].clearObjectContain();
 
 		for (int j = 0; j < _lightObjects.size(); j++)
-		{
+		{						
 			if (currentTrackPos.contains(Point(_lightObjects[j].centroid.x, _lightObjects[j].centroid.y)))
 			{
 				//cout << "curent : " << trackIndex << " " << currentTrackPos.x << " " << currentTrackPos.y << endl;
 				//cout << "object : " << j << " " << _lightObjects[j].centroid.x << " " << _lightObjects[j].centroid.y << endl;
-				//isTrack = true;
-
+				//isTrack = true;				
 				_vectorOfObjectTracker[i].addObjectContain();
 			}
 		}
@@ -85,10 +86,38 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg)
 
 	for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
 	{
-		cout << i << " " << _vectorOfObjectTracker[i].getNumberOfObjectContain() << endl;
+		//cout << i << " " << _vectorOfObjectTracker[i].getNumberOfObjectContain() << endl;		
 		if (_vectorOfObjectTracker[i].getNumberOfObjectContain() == 0)
 		{
-			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
+			Mat srcTempGray;
+			cvtColor(srcTemp.clone()(_vectorOfObjectTracker[i].getCurrentPos()), srcTempGray, CV_BGR2GRAY);
+			CBrightObjectSegment brightObjectSegment(0.98);
+			brightObjectSegment.getBinaryImage(srcTempGray);
+			erode(srcTempGray, srcTempGray, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+			dilate(srcTempGray, srcTempGray, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));
+			Mat labelImg, stats, centroids;
+			const int nLabels = connectedComponentsWithStats(srcTempGray, labelImg, stats, centroids, 8, CV_16U);
+			cout << nLabels << endl;
+			/*switch (nLabels) 
+			{
+				case 2:
+					_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
+					break;
+				case 3:
+					Point centroid = Point(centroids.at<double>(2, 0), centroids.at<double>(2, 1));
+					Point centroid2 = Point(centroids.at<double>(3, 0), centroids.at<double>(3, 1));
+					
+					
+					break;
+				default:
+					_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
+					break;
+			}*/
+			if (!((nLabels ==2)||(nLabels == 3))) {
+				_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
+			}
+			
+				
 		}
 
 	}

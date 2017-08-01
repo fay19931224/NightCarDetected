@@ -4,6 +4,7 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <vector>
+#include "CBrightObjectSegment.h"
 
 using namespace cv;
 using namespace std;
@@ -14,7 +15,7 @@ public:
 	~HeadLightManager();
 	void setLightObjects(vector<ObjectDetected> lightObjects);
 	void setHeadLightPairs(Rect2d headLight, Mat& srcImg);
-	void updateHeadLightPairs(Mat& srcImg);
+	void updateHeadLightPairs(Mat& srcImg,Mat srcTemp);
 
 
 private:
