@@ -19,9 +19,12 @@ public:
 	void addObjectContain();
 	int getNumberOfObjectContain();
 	void clearObjectContain();
+	void setFrameCount(int count);
+	int getFrameCount();
 private:
 	string _trackingAlg = "KCF";
 	Ptr<Tracker> _tracker;
 	Rect2d _headLight;
 	int _objectContainCount = 0;
+	int _frameCount = 0;
 };

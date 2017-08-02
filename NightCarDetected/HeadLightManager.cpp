@@ -21,21 +21,21 @@ void HeadLightManager::setHeadLightPairs(Rect2d headLight, Mat& srcImg)
 		//ckeck which object occupuies the most area
 		if ((currentTrackPos & headLight).area() > intersactionArea)
 		{
-			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
-			/*flag = i;
-			intersactionArea = (currentTrackPos & headLight).area();*/
+			//_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
+			flag = i;
+			intersactionArea = (currentTrackPos & headLight).area();
+			break;
 		}
 	}
-	/*if (_vectorOfObjectTracker.size() > 0 && (flag != -1))
-	{
+	if (_vectorOfObjectTracker.size() > 0 && (flag != -1))
+	{		
 		_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + flag);
-	}*/
+	}
 
 
 	objectTracker.initialize(headLight, srcImg);
 	_vectorOfObjectTracker.push_back(objectTracker);
-
-
+	
 	//cout << " Size: " << _vectorOfObjectTracker.size() << endl;
 	//for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
 	//{
@@ -70,7 +70,7 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg, Mat srcTemp)
 		_vectorOfObjectTracker[i].clearObjectContain();
 
 		for (int j = 0; j < _lightObjects.size(); j++)
-		{						
+		{
 			if (currentTrackPos.contains(Point(_lightObjects[j].centroid.x, _lightObjects[j].centroid.y)))
 			{
 				//cout << "curent : " << trackIndex << " " << currentTrackPos.x << " " << currentTrackPos.y << endl;
@@ -79,7 +79,6 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg, Mat srcTemp)
 				_vectorOfObjectTracker[i].addObjectContain();
 			}
 		}
-
 	}
 
 	//cout << " Size: " << _vectorOfObjectTracker.size() << endl;
@@ -89,37 +88,73 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg, Mat srcTemp)
 		//cout << i << " " << _vectorOfObjectTracker[i].getNumberOfObjectContain() << endl;		
 		if (_vectorOfObjectTracker[i].getNumberOfObjectContain() == 0)
 		{
-			Mat srcTempGray;
-			cvtColor(srcTemp.clone()(_vectorOfObjectTracker[i].getCurrentPos()), srcTempGray, CV_BGR2GRAY);
-			CBrightObjectSegment brightObjectSegment(0.98);
-			brightObjectSegment.getBinaryImage(srcTempGray);
-			erode(srcTempGray, srcTempGray, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
-			dilate(srcTempGray, srcTempGray, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));
-			Mat labelImg, stats, centroids;
-			const int nLabels = connectedComponentsWithStats(srcTempGray, labelImg, stats, centroids, 8, CV_16U);
-			cout << nLabels << endl;
-			/*switch (nLabels) 
+			_vectorOfObjectTracker[i].setFrameCount(_vectorOfObjectTracker[i].getFrameCount() + 1);
+			if (_vectorOfObjectTracker[i].getFrameCount() > 10) 
 			{
-				case 2:
-					_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
-					break;
-				case 3:
-					Point centroid = Point(centroids.at<double>(2, 0), centroids.at<double>(2, 1));
-					Point centroid2 = Point(centroids.at<double>(3, 0), centroids.at<double>(3, 1));
-					
-					
-					break;
-				default:
-					_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
-					break;
-			}*/
-			if (!((nLabels ==2)||(nLabels == 3))) {
 				_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
 			}
 			
-				
 		}
 
+		//Mat srcTempGray;
+		//cvtColor(srcTemp.clone()(_vectorOfObjectTracker[i].getCurrentPos()), srcTempGray, CV_BGR2GRAY);
+		//CBrightObjectSegment brightObjectSegment(0.98);
+		//brightObjectSegment.getBinaryImage(srcTempGray);
+		//erode(srcTempGray, srcTempGray, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+		//dilate(srcTempGray, srcTempGray, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));
+		//Mat labelImg, stats, centroids;
+		//const int nLabels = connectedComponentsWithStats(srcTempGray, labelImg, stats, centroids, 8, CV_16U);
+		//cout << nLabels << endl;
+		//vector<ObjectDetected> reMultThreshodObjecte;
+		//for (int label = 1; label < nLabels; ++label)
+		//{
+		//	const int width = stats.at<int>(label, CC_STAT_WIDTH);
+		//	const int height = stats.at<int>(label, CC_STAT_HEIGHT);
+		//	const int area = stats.at<int>(label, CC_STAT_AREA);
+		//	const int left = stats.at<int>(label, CC_STAT_LEFT) ;
+		//	const int top = stats.at<int>(label, CC_STAT_TOP);
+		//	Point centroid = Point(centroids.at<double>(label, 0) , centroids.at<double>(label, 1));
+		//	const double HeightWidthRatio = static_cast<double>(height) / static_cast<double>(width);
+		//	if (area < 2000 && HeightWidthRatio <= 2)
+		//	{
+		//		ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid ,true ,area };
+		//		reMultThreshodObjecte.push_back(objectDetected);
+		//	}
+		//}
+		//for (int i = 0; i < reMultThreshodObjecte.size(); i++)
+		//{
+		//	for (int j = 0; j < reMultThreshodObjecte.size(); j++)
+		//	{
+		//		if ((i != j) && (reMultThreshodObjecte[i].isMatched == false) && (reMultThreshodObjecte[j].isMatched == false))
+		//		{
+		//			// i is on left and  j is on right
+		//			const double carLightDistanse = reMultThreshodObjecte[j].centroid.x - reMultThreshodObjecte[i].centroid.x;
+		//			const double carLeftingDistanse = reMultThreshodObjecte[i].centroid.x + carLightDistanse / 2;
+		//			const double carLightheightDiffY = reMultThreshodObjecte[j].centroid.y - reMultThreshodObjecte[i].centroid.y;
+		//			if ((reMultThreshodObjecte[i].region.area() <= reMultThreshodObjecte[j].region.area()) && carLightDistanse>0)
+		//			{
+		//				cout << "dddddddddddddddddddd" << endl;
+		//				reMultThreshodObjecte[i].isMatched = true;
+		//				reMultThreshodObjecte[j].isMatched = true;
+		//				break;
+		//			}
+		//		}
+		//	}
+		//}		
+		//bool temp =true;
+		//for (int i = 0; i < reMultThreshodObjecte.size(); i++) 
+		//{				
+		//	if (reMultThreshodObjecte[i].isMatched == true) 
+		//	{
+		//		temp = false;
+		//		break;
+		//	}
+		//}
+		//if (temp) 
+		//{
+		//	//cout << "dddddddddddddddddddd" << endl;
+		//	_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
+		//}										
 	}
 
 	//update

@@ -131,7 +131,7 @@ int main() {
 		imshow("Right Binary Result", rightGrayRectTemp);
 		
 		videoWriter << rightSrc;
-		switch (1) {
+		switch (0) {
 			case 1:
 				waitKey(1);
 				break;

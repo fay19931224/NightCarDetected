@@ -49,3 +49,12 @@ void ObjectTracker::clearObjectContain()
 	_objectContainCount = 0;
 }
 
+void ObjectTracker::setFrameCount(int count)
+{
+	_frameCount = count;
+}
+
+int ObjectTracker::getFrameCount() 
+{
+	return  _frameCount;
+}
