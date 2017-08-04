@@ -1,7 +1,10 @@
 #include "HeadLightManager.h"
 
 
-HeadLightManager::HeadLightManager() {}
+HeadLightManager::HeadLightManager() 
+{
+	
+}
 HeadLightManager::~HeadLightManager() {}
 
 void HeadLightManager::setLightObjects(vector<ObjectDetected> lightObjects)
@@ -50,13 +53,16 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg, Mat srcTemp)
 	//bool isTrack = false;
 	//int trackIndex;
 
+	
 	//check whether tracker is out of detect window or not
 	for (int i = 0; i < _vectorOfObjectTracker.size(); i++)
 	{
 		Rect2d currentTrackPos = _vectorOfObjectTracker[i].getCurrentPos();
 
-		if (currentTrackPos.x < 10 || currentTrackPos.y < 10 ||
-			currentTrackPos.x > srcImg.cols || currentTrackPos.y > srcImg.rows)
+		if (currentTrackPos.x < 10 || 
+			currentTrackPos.y < 10 ||
+			currentTrackPos.x + currentTrackPos.width > _offsetX + _middle.x + _middle.width ||
+			currentTrackPos.y + currentTrackPos.height > _offsetY + _middle.y + _middle.height)
 		{
 			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
 		}
@@ -88,12 +94,12 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg, Mat srcTemp)
 		//cout << i << " " << _vectorOfObjectTracker[i].getNumberOfObjectContain() << endl;		
 		if (_vectorOfObjectTracker[i].getNumberOfObjectContain() == 0)
 		{
-			_vectorOfObjectTracker[i].setFrameCount(_vectorOfObjectTracker[i].getFrameCount() + 1);
+			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
+			/*_vectorOfObjectTracker[i].setFrameCount(_vectorOfObjectTracker[i].getFrameCount() + 1);
 			if (_vectorOfObjectTracker[i].getFrameCount() > 10) 
 			{
 				_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
-			}
-			
+			}*/			
 		}
 
 		//Mat srcTempGray;
@@ -162,4 +168,12 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg, Mat srcTemp)
 	{
 		_vectorOfObjectTracker[i].update(srcImg);
 	}
+}
+
+void HeadLightManager::setDetectRegion(Rect middle, Rect front, int offsetX, int offsetY)
+{	
+	_front = front;
+	_middle = middle;
+	_offsetX = offsetX;
+	_offsetY = offsetY;	
 }

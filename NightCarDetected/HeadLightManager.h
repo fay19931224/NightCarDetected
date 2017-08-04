@@ -16,10 +16,14 @@ public:
 	void setLightObjects(vector<ObjectDetected> lightObjects);
 	void setHeadLightPairs(Rect2d headLight, Mat& srcImg);
 	void updateHeadLightPairs(Mat& srcImg,Mat srcTemp);
-
-
+	void setDetectRegion(Rect middle, Rect front, int offsetX, int offsetY);
+	
 private:
 	vector<Rect2d> _headLightPairs;
 	vector<ObjectTracker> _vectorOfObjectTracker;
 	vector<ObjectDetected> _lightObjects;
+	Rect _middle;
+	Rect _front;
+	int _offsetX;
+	int _offsetY;
 };

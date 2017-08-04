@@ -1,6 +1,6 @@
 #include "ImageProcessor.h"
 
-#define ENABLE_TRACKER
+//#define ENABLE_TRACKER
 
 ImageProcessor::ImageProcessor()
 {
@@ -9,6 +9,11 @@ ImageProcessor::ImageProcessor()
 ImageProcessor::~ImageProcessor()
 {
 }
+
+bool ImageProcessor::compareDistance(const ObjectDetected &a, const ObjectDetected &b)
+ {
+	return a.centroid.x > b.centroid.x;
+	}
 
 void ImageProcessor::setHeadLightManager(HeadLightManager headLightManager)
 {
@@ -51,7 +56,7 @@ vector<ObjectDetected> ImageProcessor::getObjectDetectedVector()
 
 
 #include<fstream>
-void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect frontRegion) 
+void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, Rect rightFrontROI, Rect rightMiddleROI)
 {
 	char filename[] = "Position.txt";
 	fstream fp;
@@ -64,6 +69,9 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 	const int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
 	ObjectDetectedVector.clear();
 
+	_headLightManager.setDetectRegion(rightMiddleROI, rightFrontROI, offsetX, offsetY);
+
+
 	Mat srcTemp = srcImg.clone();
 	//extract meaningful component
 	for (int label = 1; label < nLabels; ++label)
@@ -75,7 +83,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 		const int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
 		const double HeightWidthRatio = static_cast<double>(height) / static_cast<double>(width);
-		if (area < 2000&& HeightWidthRatio<=2)
+		if (area < 2000&& HeightWidthRatio<=1)
 		{
 			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid ,true ,area };
 			ObjectDetectedVector.push_back(objectDetected);
@@ -153,6 +161,8 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 		}
 	}	
 
+	sort(ObjectDetectedVector.begin(), ObjectDetectedVector.end(), compareDistance);
+
 	//match carlight
 	for (int i = 0; i < ObjectDetectedVector.size(); i++)
 	{		
@@ -164,8 +174,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 				const double carLightDistanse= ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x;
 				const double carLeftingDistanse = ObjectDetectedVector[i].centroid.x + carLightDistanse / 2;
 				const double carLightheightDiffY = ObjectDetectedVector[j].centroid.y - ObjectDetectedVector[i].centroid.y;
-				if ((isCarLightHeightDiffYCorrect(carLightheightDiffY, carLeftingDistanse) &&
-					(ObjectDetectedVector[i].region.area() <= ObjectDetectedVector[j].region.area()) &&
+				if ((isCarLightHeightDiffYCorrect(carLightheightDiffY, carLeftingDistanse) &&					
 					(-0.0005*pow(carLightDistanse, 3) + 0.1379*pow(carLightDistanse, 2) - 14.055*carLightDistanse + 679.14 <= carLeftingDistanse)
 					&&(-0.0301*pow(carLightDistanse, 2) +0.8564*carLightDistanse+575.29>=carLeftingDistanse)))
 					
@@ -175,6 +184,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 					Rect2d carLightRect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
 										
 # ifdef ENABLE_TRACKER
+					
 					_headLightManager.setHeadLightPairs(carLightRect, srcImg);
 # endif
 
@@ -196,13 +206,13 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 			}			
 		}		
 		//determine isn't carlight from far position
-		if ((frontRegion.contains(ObjectDetectedVector[i].centroid)) && (ObjectDetectedVector[i].isMatched == false))
+		if ((rightFrontROI.contains(ObjectDetectedVector[i].centroid)) && (ObjectDetectedVector[i].isMatched == false))
 		{
 			/*ostringstream strs;
 			strs << ObjectDetectedVector[i].area;
 			string str = strs.str();
 			putText(srcImg, str, CvPoint(ObjectDetectedVector[i].region.x, ObjectDetectedVector[i].region.y - 25), 0, 1, Scalar(0, 0, 255), 2);*/
-			//_headLightManager.setHeadLightPairs(ObjectDetectedVector[i].region, srcImg);
+			_headLightManager.setHeadLightPairs(ObjectDetectedVector[i].region, srcImg);
 			rectangle(srcImg, ObjectDetectedVector[i].region, Scalar(0, 97, 255), 2);
 		}		
 	}
