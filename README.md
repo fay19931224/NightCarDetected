@@ -4,6 +4,8 @@
 * Red mean catch a car
 * Pink mean car light
 * Yellow mean car in near position
+* Blue mean a car light
+* White mean motorcycle
 
 
 # todo
