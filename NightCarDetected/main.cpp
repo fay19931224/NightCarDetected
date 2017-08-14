@@ -24,15 +24,17 @@ int main() {
 	
 
 	//冠凱
-	//string path = "C:/Users/User/Dropbox/已剪/city1.avi"; 
+	string path = "C:/Users/User/Dropbox/已剪/city1.avi"; 
 	//string path = "C:/Users/User/Dropbox/已剪/city2.avi"; 
 	//string path = "C:/Users/User/Dropbox/已剪/city3.avi"; 
-	string path = "C:/Users/User/Dropbox/已剪/highway1.avi";	
+	//string path = "C:/Users/User/Dropbox/已剪/highway1.avi";	
 	//string path = "C:/Users/User/Dropbox/已剪/highway2.avi";
 	//string path = "C:/Users/User/Dropbox/已剪/lowbrightness1.avi";
 	//string path = "C:/Users/User/Dropbox/已剪/lowbrightness2.avi";
 	//string path = "C:/Users/User/Dropbox/已剪/lowbrightness3.avi";
 	//string path = "C:/Users/User/Dropbox/已剪/motor1.avi";
+	//string path = "C:/Users/User/Desktop/大直橋/AV1-20170807_214856_20_10m.avi";
+	//string path = "C:/Users/User/Desktop/大直橋/AV1-20170807_214356_40_30_20m.avi";
 
 	//紅衣
 	//string path = "C:/Users/Henry/Desktop/華創/video/AV1-20170710_194208(0-1分34).avi";
@@ -40,8 +42,9 @@ int main() {
 	
 	ImageProcessor imageProcessor;
 
-	CBrightObjectSegment brightObjectSegment(0.99);
+	CBrightObjectSegment brightObjectSegment(0.985);
 	CBrightObjectSegment brightObjectSegment2(0.985);
+	//CBrightObjectSegment brightObjectSegment3(0.90);
 	
 	VideoWriter videoWriter;
 	VideoCapture capture(path);
@@ -85,29 +88,31 @@ int main() {
 		const int rightFrontRectY = rightGray.rows * 28 / 100; 
 		const int rightFrontRectWidth = rightGray.cols * 2 / 5;
 		const int rightFrontRectHeight = rightGray.rows * 5 / 12;		
-		Rect rightFrontRect = Rect(rightFrontRectX, rightFrontRectY, rightFrontRectWidth, rightFrontRectHeight);
-		rectangle(rightSrc, rightFrontRect, Scalar(0, 0, 255), 1, 8, 0); // draw ROI
+		Rect rightFrontRect = Rect(rightFrontRectX, rightFrontRectY, rightFrontRectWidth, rightFrontRectHeight);		
+		rectangle(rightSrc, rightFrontRect, Scalar(0, 0, 255), 1, 8, 0); // draw Front ROI
 				
-		//const int rightRearRectX= rightGray.cols * 13 / 18;
-		//const int rightRearRectY= rightGray.rows * 28 / 100;
-		//const int rightRearRectWidth= rightGrayRect.cols - rightGray.cols * 13 / 18;
-		//const int rightRearRectHeight= rightGray.rows * 5 / 12;
-		//Rect rightRearRect = Rect(rightRearRectX, rightRearRectY, rightRearRectWidth, rightRearRectHeight);
-		//rectangle(rightSrc, rightRearRect, Scalar(255, 0, 55), 1, 8, 0); // draw ROI		
+		//imageProcessor.extractEfficientImage(rightGrayRectTemp);
 
-		imageProcessor.extractEfficientImage(rightGrayRectTemp);
+		Rect rightFrontROI = Rect(0,0, rightFrontRectWidth, rightFrontRectHeight);		
+		Rect rightMiddleROI = Rect(rightFrontRectWidth, 0, rightGray.cols * 17 / 20 - rightFrontRectWidth, rightFrontRectHeight);
+		/*Rect rightMiddleROI = Rect(rightFrontRectWidth, 0, rightFrontRectWidth- rightFrontRect.width/5, rightFrontRectHeight);		
+		Rect rightFarROI = Rect(rightMiddleROI.x+ rightMiddleROI.width, 0, rightROI.width- (rightMiddleROI.x + rightMiddleROI.width), rightFrontRectHeight);*/
 
-		Rect rightMiddleROI = Rect(0,0, rightFrontRectWidth, rightFrontRectHeight);
-		Rect rightFrontROI = Rect(rightFrontRectWidth, 0, rightGray.cols * 17 / 20 -rightFrontRectWidth, rightFrontRectHeight);		
-		Mat rightMiddle = rightGrayRectTemp(rightMiddleROI);
 		Mat rightFront = rightGrayRectTemp(rightFrontROI);
-		
+		Mat rightMiddle = rightGrayRectTemp(rightMiddleROI);		
+		//Mat rightFar = rightGrayRectTemp(rightFarROI);
+
+		//rectangle(rightGrayRectTemp, rightFrontROI, Scalar(255, 255, 255), 1, 8, 0); // draw  ROI
+		//rectangle(rightGrayRectTemp, rightMiddleROI, Scalar(255, 255, 255), 1, 8, 0); // draw  ROI
+		//rectangle(rightGrayRectTemp, rightFarROI, Scalar(255, 255, 255), 1, 8, 0); // draw  ROI
+
 
 
 		brightObjectSegment.getBinaryImage(rightFront);
 		brightObjectSegment2.getBinaryImage(rightMiddle);
+		//brightObjectSegment3.getBinaryImage(rightFar);
 		imageProcessor.removeNoice(rightGrayRectTemp,5,5,7,7);
-		imageProcessor.detectLight(rightSrc, rightGrayRectTemp,0, rightGray.rows * 28 / 100, rightFrontRect, rightFrontROI);
+		imageProcessor.detectLight(rightSrc, rightGrayRectTemp,0, rightGray.rows * 28 / 100, rightFrontRect, rightMiddleROI);
 
 		/*		
 		Mat rightHSV;
@@ -135,23 +140,23 @@ int main() {
 
 		imshow("HSV", rightHSVRect);
 		*/
-		
-		
+				
 		imshow("Right Result", rightSrc);
 		imshow("Right Binary Result", rightGrayRectTemp);
 		
 		videoWriter << rightSrc;
-		switch (1) {
+		switch (0) {
 			case 1:
 				waitKey(1);
 				break;
 			case 0:
 				int key = waitKey(-1);
+
 				if (key == 120)
 				{
 
 					frame++;
-					//cout <<"frame:" <<frame << endl;
+					cout <<"frame:" <<frame << endl;
 					continue;
 				}
 				else if (key == 122)
@@ -164,7 +169,7 @@ int main() {
 					else
 					{
 						capture.set(CV_CAP_PROP_POS_FRAMES, frame);
-						//cout << "frame:" << frame << endl;
+						cout << "frame:" << frame << endl;
 					}
 				}
 				break;
