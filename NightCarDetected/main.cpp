@@ -24,7 +24,8 @@ int main() {
 	
 
 	//冠凱
-	string path = "C:/Users/User/Dropbox/已剪/city1.avi"; 
+	//string path = "C:/Users/User/Dropbox/已剪/city1.avi"; 
+	string path = "C:/Users/User/Desktop/car_speed_OK/70km.avi";
 	//string path = "C:/Users/User/Dropbox/已剪/city2.avi"; 
 	//string path = "C:/Users/User/Dropbox/已剪/city3.avi"; 
 	//string path = "C:/Users/User/Dropbox/已剪/highway1.avi";	
@@ -145,7 +146,7 @@ int main() {
 		imshow("Right Binary Result", rightGrayRectTemp);
 		
 		videoWriter << rightSrc;
-		switch (0) {
+		switch (1) {
 			case 1:
 				waitKey(1);
 				break;

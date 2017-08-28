@@ -131,20 +131,27 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 			//	}
 		}
 		
-	}
-	
+	}	
 
 	//extract the object in upper postion
 	for (int i = 0; i < ObjectDetectedVector.size(); i++)
 	{
 		for (int j = 0; j < ObjectDetectedVector.size(); j++) 
 		{	
-			if((ObjectDetectedVector[i].centroid.x- ObjectDetectedVector[j].centroid.x<15)&&
-				(ObjectDetectedVector[i].centroid.x - ObjectDetectedVector[j].centroid.x>-1)&&
-				(ObjectDetectedVector[i].centroid.y < ObjectDetectedVector[j].centroid.y)&&
+			if((ObjectDetectedVector[i].centroid.y < ObjectDetectedVector[j].centroid.y)&&
 				((ObjectDetectedVector[i].upperPosition!=false)||(ObjectDetectedVector[j].upperPosition != false)))
 			{
-				ObjectDetectedVector[j].upperPosition = false;
+				int widthStart= ObjectDetectedVector[j].region.x;
+				int widthEnd = ObjectDetectedVector[j].region.x+ ObjectDetectedVector[i].region.width;
+				while(widthStart<widthEnd)
+				{
+					if (ObjectDetectedVector[i].region.contains(CvPoint(widthStart, ObjectDetectedVector[i].centroid.y))) 
+					{
+						ObjectDetectedVector[j].upperPosition = false;
+						break;
+					}
+					widthStart++;
+				}				
 			}
 		}
 	}
@@ -152,15 +159,18 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 	for (vector<ObjectDetected>::iterator it =ObjectDetectedVector.begin(); it!=ObjectDetectedVector.end();)
 	{
 		ObjectDetected temp=(ObjectDetected)*it;
+		
 		if (temp.upperPosition == false) 
 		{
-			it = ObjectDetectedVector.erase(it);
+			it = ObjectDetectedVector.erase(it);			
 		}
 		else
 		{
 			it++;
 		}
+	
 	}	
+	
 
 	sort(ObjectDetectedVector.begin(), ObjectDetectedVector.end(), compareDistance);
 
@@ -176,7 +186,7 @@ void ImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int of
 				const double carLeftingDistanse = ObjectDetectedVector[i].centroid.x + carLightDistanse / 2;
 				const double carLightheightDiffY = ObjectDetectedVector[j].centroid.y - ObjectDetectedVector[i].centroid.y;
 				if ((carLightheightDiffY < 5 &&
-					/*isCarLightHeightDiffYCorrect(carLightheightDiffY, carLeftingDistanse) &&*/						
+					isCarLightHeightDiffYCorrect(carLightheightDiffY, carLeftingDistanse) &&
 					(-0.0005*pow(carLightDistanse, 3) + 0.1379*pow(carLightDistanse, 2) - 14.055*carLightDistanse + 679.14 <= carLeftingDistanse)
 					&&(-0.0301*pow(carLightDistanse, 2) +0.8564*carLightDistanse+575.29>=carLeftingDistanse)))					
 				{
