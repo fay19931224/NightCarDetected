@@ -1,16 +1,2 @@
-# NightCarDetected
-# Car light category
-* Orange mean car in far position
-* Red mean catch a car
-* Pink mean car light
-* Yellow mean car in near position
-* Blue mean a car light
-* White mean motorcycle
-
-
-# todo
-* the lower bounding distance between two light
-* start tracking if detected single light in near region
-* implement multiple threshold on tracking region
-* check light ratio
-
+# NightObejctDetected_center
+detected object behind the car
