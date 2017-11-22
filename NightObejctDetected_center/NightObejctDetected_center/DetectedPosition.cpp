@@ -8,7 +8,7 @@ DetectedPosition::DetectedPosition(string path)
 		system("pause");
 	}
 	videoSize = Size((int)capture.get(CV_CAP_PROP_FRAME_WIDTH), (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT));
-	videoWriter.open("test.avi", CV_FOURCC('M', 'P', '4', '2'), capture.get(CV_CAP_PROP_FPS), CvSize(videoSize.width / 2, videoSize.height / 2), true);
+	videoWriter.open("test.avi", CV_FOURCC('M', 'P', '4', '2'), capture.get(CV_CAP_PROP_FPS), Size(videoSize.width / 2, videoSize.height / 2), true);
 	if (!videoWriter.isOpened())
 	{
 		cout << "Cannot write video" << endl;

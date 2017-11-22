@@ -13,12 +13,19 @@ using namespace cv;
 
 int main() {
 	int mode = 0;
-	string carBackPath = "D:/UserFolder/Desktop/haitec/video/car_back/華創鏡頭/AV1-move2.avi";
+	string carBackPath1 = "D:/UserFolder/Desktop/haitec/video/car_back/華創鏡頭/car-str.mp4";
+	string carBackPath2 = "D:/UserFolder/Desktop/haitec/video/car_back/華創鏡頭/car-curve.mp4";
+	string carBackPath3 = "D:/UserFolder/Desktop/haitec/video/car_back/華創鏡頭/car-curve2.mp4";
+	string carBackPath4 = "D:/UserFolder/Desktop/haitec/video/car_back/華創鏡頭/motor-str.mp4";
+	string carBackPath5 = "D:/UserFolder/Desktop/haitec/video/car_back/華創鏡頭/motor-curve.mp4";
+	string carBackPath6 = "D:/UserFolder/Desktop/haitec/video/car_back/華創鏡頭/distance-10-5.mp4";
+	string carBackPath7 = "D:/UserFolder/Desktop/haitec/video/car_back/華創鏡頭/SJCAM-car-distance40-30.mp4";
+	string carBackPath8 = "D:/UserFolder/Desktop/haitec/video/car_back/華創鏡頭/SJCAM-car-distance20-10-5.mp4";
 	string carRightPath = "D:/UserFolder/Desktop/haitec/video/cut/highway1.avi";
 
 	if (mode == 0)
 	{
-		DetectedPosition *detectedPosition = new DetectedBack(carBackPath);
+		DetectedPosition *detectedPosition = new DetectedBack(carBackPath6);
 		BackImageProcessor *backImageProcessor = new BackImageProcessor();
 		detectedPosition->SetImageProcessor(backImageProcessor);
 		detectedPosition->run();

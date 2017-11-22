@@ -20,11 +20,13 @@ public:
 	virtual void threshold_hist(Mat& src) = 0;
 	virtual void removeNoice(Mat &src, int Eheight, int Ewidth, int Dheight, int Dwidth) = 0;
 	virtual void detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, vector<Rect> ROIs) = 0;
-	virtual int thresholdValue(Mat& src) = 0;
 	virtual void extractEfficientImage(Mat& src) = 0;
 	virtual void setHeadLightManager(HeadLightManager headLightManager) = 0;
 	virtual vector<ObjectDetected> getObjectDetectedVector() = 0;
-	virtual bool isCarLightHeightDiffYCorrect(int diffY, int distance) = 0;
+	virtual int thresholdValue(Mat& src) = 0;
+
+	bool isCarLightHeightDiffYCorrect(int diffY, int distance);
+	
 
 };
 

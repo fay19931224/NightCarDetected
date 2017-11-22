@@ -2,6 +2,7 @@
 DetectedBack::DetectedBack(string path) :DetectedPosition(path)
 {
 	position = Rect(videoSize.width / 2, 0, videoSize.width / 2, videoSize.height / 2);
+	//position = Rect(0, 0, videoSize.width, videoSize.height);
 }
 
 DetectedBack::~DetectedBack()
@@ -15,7 +16,7 @@ void DetectedBack::SetImageProcessor(ImageProcessor *imageProcessor)
 
 void DetectedBack::run()
 {
-	CBrightObjectSegment brightObjectSegment(0.999);
+	CBrightObjectSegment brightObjectSegment(0.995);
 	CBrightObjectSegment brightObjectSegment2(0.985);
 
 	//capture.set(CV_CAP_PROP_POS_FRAMES, 10000);
@@ -28,12 +29,13 @@ void DetectedBack::run()
 		}
 		
 		//Dividing the video to left and right part and changing image from color to gray				
-		src = src(position);				
+		src = src(position);	
+		//resize(src, src, Size(728, 484));
 		cvtColor(src, gray, CV_BGR2GRAY);
 
 		//back part
 		Rect backROI = Rect(0, gray.rows / 5 * 2, gray.cols , gray.rows / 5 * 3);
-		rectangle(src, backROI, Scalar(0, 255, 255), 1, 8, 0); // draw ROI
+		//rectangle(src, backROI, Scalar(0, 255, 255), 1, 8, 0); // draw ROI
 		grayRect = gray(backROI);
 		grayRectTemp = grayRect.clone();
 
@@ -81,20 +83,21 @@ void DetectedBack::run()
 		brightObjectSegment.getBinaryImage(center);
 
 
-		processor->removeNoice(grayRectTemp, 5, 5, 7, 7);
-		processor->detectLight(src, grayRectTemp, 0, gray.rows / 5 * 2, ROIs);
+		processor->removeNoice(center, 5, 5, 5, 5);
+		processor->detectLight(src, center, gray.cols / 3, gray.rows / 5 * 2, ROIs);
 
 		imshow("Right Result", src);
 		imshow("Right Binary Result", center);
 
 		videoWriter << src;
+	
 		switch (1) {
 		case 1:
+			cout << "frame:" << capture.get(CV_CAP_PROP_POS_FRAMES) << endl;
 			waitKey(1);
 			break;
 		case 0:
 			int key = waitKey(-1);
-
 			if (key == 120)
 			{
 
