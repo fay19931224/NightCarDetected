@@ -4,9 +4,11 @@ class DetectedBack :public DetectedPosition
 {
 public:
 	DetectedBack(string path);
-	void SetImageProcessor(ImageProcessor *imageProcessor);
 	~DetectedBack();
+	void SetImageProcessor(ImageProcessor *imageProcessor);
+	Mat getResult();
 	void run();
+	
 private:
 	Mat src;
 	Mat dst;

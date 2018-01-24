@@ -5,10 +5,11 @@ class DetectedRight: public DetectedPosition
 public:
 	DetectedRight(string path);
 	void SetImageProcessor(ImageProcessor *imageProcessor);
+	Mat getResult();
 	~DetectedRight();
 	void run();
 private:
-	Mat Src;
+	Mat src;
 	Mat Dst;
 	Mat Gray;
 	Mat GrayRect;

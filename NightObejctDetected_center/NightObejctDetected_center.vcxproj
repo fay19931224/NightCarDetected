@@ -68,7 +68,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -82,6 +85,9 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -103,6 +109,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -115,9 +122,11 @@
     <ClCompile Include="CBrightObjectSegment.cpp" />
     <ClCompile Include="CPartClass.cpp" />
     <ClCompile Include="DetectedBack.cpp" />
+    <ClCompile Include="DetectedPano.cpp" />
     <ClCompile Include="DetectedPosition.cpp" />
     <ClCompile Include="DetectedRight.cpp" />
     <ClCompile Include="HeadLightManager.cpp" />
+    <ClCompile Include="LeftImageProcessor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MotionEstimate.cpp" />
     <ClCompile Include="ObjectTracker.cpp" />
@@ -131,8 +140,10 @@
     <ClInclude Include="DetectedBack.h" />
     <ClInclude Include="DetectedPosition.h" />
     <ClInclude Include="DetectedRight.h" />
+    <ClInclude Include="DetectedPano.h" />
     <ClInclude Include="HeadLightManager.h" />
     <ClInclude Include="ImageProcessor.h" />
+    <ClInclude Include="LeftImageProcessor.h" />
     <ClInclude Include="MotionEstimate.h" />
     <ClInclude Include="ObjectDetected.h" />
     <ClInclude Include="ObjectTracker.h" />
@@ -148,7 +159,7 @@
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>此專案參考這部電腦上所缺少的 NuGet 封裝。請啟用 NuGet 封裝還原，以下載該封裝。如需詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的檔案是 {0}。</ErrorText>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\opencvcontrib.redist.3.1.0\build\native\opencvcontrib.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\opencvcontrib.redist.3.1.0\build\native\opencvcontrib.redist.targets'))" />
     <Error Condition="!Exists('..\packages\opencvcontrib.3.1.0\build\native\opencvcontrib.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\opencvcontrib.3.1.0\build\native\opencvcontrib.targets'))" />

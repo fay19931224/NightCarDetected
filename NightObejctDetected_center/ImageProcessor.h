@@ -5,6 +5,7 @@
 #include <opencv2\imgproc\imgproc.hpp>
 #include <vector>
 #include <algorithm>
+
 #include "HeadLightManager.h"
 #include "ObjectDetected.h"
 

@@ -29,3 +29,12 @@ void DetectedPosition::run()
 	cout << "test" << endl;
 	system("PAUSE");
 }
+
+Mat DetectedPosition::getResult()
+{
+	return Mat();
+}
+
+void DetectedPosition::SetImageProcessor(ImageProcessor *imageProcessor)
+{
+}

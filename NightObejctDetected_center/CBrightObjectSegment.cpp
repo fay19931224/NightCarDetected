@@ -14,8 +14,17 @@ CBrightObjectSegment::~CBrightObjectSegment()
 {
 }
 
-void CBrightObjectSegment::getBinaryImage(Mat grayscale_image)
+void CBrightObjectSegment::getBinaryImage(Mat grayscale_image, int framePos, int buffer)
 {
+
+	if (buffer > 0)
+	{
+		if (framePos % buffer == 0)
+		{
+			m_vThresSet.clear();
+		}
+	}
+
 	//Mat mat(grayscale_image, 0);
 	int bright_threshold = 255;
 

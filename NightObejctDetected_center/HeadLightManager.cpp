@@ -61,8 +61,8 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg, Mat srcTemp)
 
 		if (currentTrackPos.x < 10 || 
 			currentTrackPos.y < 10 ||
-			currentTrackPos.x + currentTrackPos.width > _offsetX + _middle.x + _middle.width ||
-			currentTrackPos.y + currentTrackPos.height > _offsetY + _middle.y + _middle.height)
+			currentTrackPos.x + currentTrackPos.width > _offsetX + _center.x + _center.width ||
+			currentTrackPos.y + currentTrackPos.height > _offsetY + _center.y + _center.height)
 		{
 			_vectorOfObjectTracker.erase(_vectorOfObjectTracker.begin() + i);
 		}
@@ -101,10 +101,19 @@ void HeadLightManager::updateHeadLightPairs(Mat& srcImg, Mat srcTemp)
 	}
 }
 
-void HeadLightManager::setDetectRegion(Rect front, Rect middle, int offsetX, int offsetY)
+void HeadLightManager::setBackDetectRegion(vector<Rect> positions, int offsetX, int offsetY)
 {	
-	_front = front;
-	_middle = middle;
+	_left = positions[0];
+	_center = positions[1];
+	_right = positions[2];
+	_offsetX = offsetX;
+	_offsetY = offsetY;
+}
+
+void HeadLightManager::setSideDetectRegion(vector<Rect> positions, int offsetX, int offsetY)
+{
+	_left = positions[0];
+	_center = positions[1];
 	_offsetX = offsetX;
 	_offsetY = offsetY;
 }

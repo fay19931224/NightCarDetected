@@ -1,4 +1,6 @@
 #include "DetectedBack.h"
+#include <fstream>
+
 DetectedBack::DetectedBack(string path) :DetectedPosition(path)
 {
 	position = Rect(videoSize.width / 2, 0, videoSize.width / 2, videoSize.height / 2);
@@ -14,14 +16,28 @@ void DetectedBack::SetImageProcessor(ImageProcessor *imageProcessor)
 	processor = imageProcessor;
 }
 
+Mat DetectedBack::getResult()
+{
+	return src;
+}
+
 void DetectedBack::run()
 {
-	CBrightObjectSegment brightObjectSegment(0.995);
-	CBrightObjectSegment brightObjectSegment2(0.985);
+	
+	CBrightObjectSegment brightObjectSegment(0.99);
+	char filename[] = "FPS.csv";
+	fstream fp;
+	fp.open(filename, ios::app);//開啟檔案
+	if (!fp) {//如果開啟檔案失敗，fp為0；成功，fp為非0
+		cout << "Fail to open file: " << filename << endl;
+	}
 
-	//capture.set(CV_CAP_PROP_POS_FRAMES, 10000);
-	while (true)
+
+	capture.set(CV_CAP_PROP_POS_FRAMES, 0);
+	
+	for (;;)
 	{
+		
 		capture >> src;
 		if (src.empty())
 		{
@@ -48,9 +64,9 @@ void DetectedBack::run()
 		Rect leftRect = Rect(leftRectX, leftRectY, leftRectWidth, leftRectHeight);
 
 		// src center ROI
-		const int centerRectX = gray.cols / 3;
+		const int centerRectX = 0;
 		const int centerRectY = gray.rows / 5 * 2;
-		const int centerRectWidth = gray.cols / 3;
+		const int centerRectWidth = gray.cols;
 		const int centerRectHeight = gray.rows / 5 * 3;
 		Rect centerRect = Rect(centerRectX, centerRectY, centerRectWidth, centerRectHeight);
 
@@ -64,7 +80,7 @@ void DetectedBack::run()
 		
 		// grayRectTemp ROI
 		Rect leftROI = Rect(0, 0, leftRectWidth, leftRectHeight);
-		Rect centerROI = Rect(gray.cols / 3, 0, gray.cols / 3, gray.rows / 5 * 3);
+		Rect centerROI = Rect(0, 0, gray.cols, gray.rows / 5 * 3);
 		Rect rightROI = Rect(gray.cols / 3 * 2, 0, rightRectWidth, rightRectHeight);
 
 
@@ -80,14 +96,79 @@ void DetectedBack::run()
 		rectangle(src, centerRect, Scalar(0, 255, 0), 1, 8, 0); // draw Front ROI
 		//rectangle(src, rightRect, Scalar(0, 0, 255), 1, 8, 0); // draw Front ROI
 
+		
+
+
+		//imshow("Right gray", gray);
+
+		//ThresholdSet thres = brightObjectSegment.GetThresholdSet();
+
+		//for (int i = 0; i < thres.size(); i++)
+		//{
+		//cout << "Thres:"  << thres[0] << endl;
+		/*for (int j = 0; j < gray.cols; j++)
+		{
+			for (int k = 0; k < gray.rows; k++)
+			{
+				//cout << "pixel: " << (int)gray.at<uchar>(k, j) << endl;
+				if ((int)gray.at<uchar>(k, j) <= thres[thres.size() - 4])
+				{
+					gray.at<uchar>(k, j) = 0;
+				}
+				else if ((int)gray.at<uchar>(k, j) >= thres[thres.size() - 4] && (int)gray.at<uchar>(k, j) < thres[thres.size() - 3])
+				{
+					gray.at<uchar>(k, j) = 32;
+				}
+				else if ((int)gray.at<uchar>(k, j) >= thres[thres.size() - 3] && (int)gray.at<uchar>(k, j) < thres[thres.size() - 2])
+				{
+					gray.at<uchar>(k, j) = 64;
+				}
+				else if ((int)gray.at<uchar>(k, j) >= thres[thres.size() - 2] && (int)gray.at<uchar>(k, j) < thres[thres.size() - 1])
+				{
+					gray.at<uchar>(k, j) = 128;
+				}
+				else if ((int)gray.at<uchar>(k, j) >= thres[thres.size() - 1])
+				{
+					gray.at<uchar>(k, j) = 255;
+				}
+			}
+		}*/
+
+
+		//}
+
+		//imshow("Right gray thres", gray);
+		//imshow("Right Binary", center);
+
+		time_t start, finish;
+		double duration = 0;
+		double FPS = 0;
+		start = clock();
 		brightObjectSegment.getBinaryImage(center);
+		processor->removeNoice(center, 8, 8, 5, 5);
+		processor->detectLight(src, center, 0, gray.rows / 5 * 2, ROIs);
+		
+		finish = clock();
+		duration = (double)(finish - start) / CLOCKS_PER_SEC;
+		FPS = 1 / duration;
+		cout << "time: " << duration << endl;
 
-
-		processor->removeNoice(center, 5, 5, 5, 5);
-		processor->detectLight(src, center, gray.cols / 3, gray.rows / 5 * 2, ROIs);
-
+		stringstream ss;
+		ostringstream ss1;
+		ss << "FPS: " << FPS;
+		ss1 << FPS;
+		putText(src, ss.str(), Point(50, 50), 0, 1, Scalar(0, 0, 255), 2);
+		fp << ss1.str() << endl;
 		imshow("Right Result", src);
 		imshow("Right Binary Result", center);
+
+		if (capture.get(CV_CAP_PROP_POS_FRAMES) > 8880)
+		{
+			break;
+		}
+		
+
+		
 
 		videoWriter << src;
 	

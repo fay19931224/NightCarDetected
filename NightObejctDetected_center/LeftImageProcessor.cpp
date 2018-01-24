@@ -1,26 +1,26 @@
-#include "RightImageProcessor.h"
+#include "LeftImageProcessor.h"
 
 #define ENABLE_TRACKER
 
-RightImageProcessor::RightImageProcessor()
+LeftImageProcessor::LeftImageProcessor()
 {
 }
 
-RightImageProcessor::~RightImageProcessor()
+LeftImageProcessor::~LeftImageProcessor()
 {
 }
 
-bool RightImageProcessor::compareDistance(const ObjectDetected &a, const ObjectDetected &b)
+bool LeftImageProcessor::compareDistance(const ObjectDetected &a, const ObjectDetected &b)
 {
 	return a.centroid.x > b.centroid.x;
 }
 
-void RightImageProcessor::setHeadLightManager(HeadLightManager headLightManager)
+void LeftImageProcessor::setHeadLightManager(HeadLightManager headLightManager)
 {
 	_headLightManager = headLightManager;
 }
 
-void RightImageProcessor::threshold_hist(Mat& src)
+void LeftImageProcessor::threshold_hist(Mat& src)
 {
 
 	int ThresholdValue = 0;
@@ -38,7 +38,7 @@ void RightImageProcessor::threshold_hist(Mat& src)
 	previousThresholdValue = ThresholdValueAdjust;
 }
 
-void RightImageProcessor::removeNoice(Mat &src, int Eheight, int Ewidth, int Dheight, int Dwidth)
+void LeftImageProcessor::removeNoice(Mat &src, int Eheight, int Ewidth, int Dheight, int Dwidth)
 {
 
 	Mat kernalELLIPSE = getStructuringElement(MORPH_ELLIPSE, Size(Eheight, Ewidth));
@@ -48,7 +48,7 @@ void RightImageProcessor::removeNoice(Mat &src, int Eheight, int Ewidth, int Dhe
 }
 
 
-vector<ObjectDetected> RightImageProcessor::getObjectDetectedVector()
+vector<ObjectDetected> LeftImageProcessor::getObjectDetectedVector()
 {
 	return ObjectDetectedVector;
 }
@@ -56,7 +56,7 @@ vector<ObjectDetected> RightImageProcessor::getObjectDetectedVector()
 
 
 #include<fstream>
-void RightImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, vector<Rect> ROIs)
+void LeftImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, int offsetY, vector<Rect> ROIs)
 {
 	char filename[] = "Position.txt";
 	fstream fp;
@@ -69,7 +69,7 @@ void RightImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, i
 	const int nLabels = connectedComponentsWithStats(binaryImg, labelImg, stats, centroids, 8, CV_16U);
 	ObjectDetectedVector.clear();
 
-	_headLightManager.setDetectRegion(ROIs[0], ROIs[1], offsetX, offsetY);
+	_headLightManager.setSideDetectRegion(ROIs, offsetX, offsetY);
 
 
 
@@ -84,7 +84,7 @@ void RightImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, i
 		const int top = stats.at<int>(label, CC_STAT_TOP) + offsetY;
 		Point centroid = Point(centroids.at<double>(label, 0) + offsetX, centroids.at<double>(label, 1) + offsetY);
 		const double HeightWidthRatio = static_cast<double>(height) / static_cast<double>(width);
-		if ((area < 2000) && HeightWidthRatio<2)
+		if ((area > 40) && (area < 2000) && HeightWidthRatio<2)
 		{
 			ObjectDetected objectDetected{ false,Rect(left,top,width,height),centroid ,true ,area };
 			ObjectDetectedVector.push_back(objectDetected);
@@ -93,27 +93,27 @@ void RightImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, i
 	}
 
 	//extract the object in upper postion
-	for (int i = 0; i < ObjectDetectedVector.size(); i++)
-	{
-		for (int j = 0; j < ObjectDetectedVector.size(); j++)
-		{
-			if ((ObjectDetectedVector[i].centroid.y < ObjectDetectedVector[j].centroid.y) &&
-				((ObjectDetectedVector[i].upperPosition != false) || (ObjectDetectedVector[j].upperPosition != false)))
-			{
-				int widthStart = ObjectDetectedVector[j].region.x;
-				int widthEnd = ObjectDetectedVector[j].region.x + ObjectDetectedVector[i].region.width;
-				while (widthStart<widthEnd)
-				{
-					if (ObjectDetectedVector[i].region.contains(CvPoint(widthStart, ObjectDetectedVector[i].centroid.y)))
-					{
-						ObjectDetectedVector[j].upperPosition = false;
-						break;
-					}
-					widthStart++;
-				}
-			}
-		}
-	}
+	//for (int i = 0; i < ObjectDetectedVector.size(); i++)
+	//{
+	//	for (int j = 0; j < ObjectDetectedVector.size(); j++)
+	//	{
+	//		if ((ObjectDetectedVector[i].centroid.y < ObjectDetectedVector[j].centroid.y) &&
+	//			((ObjectDetectedVector[i].upperPosition != false) || (ObjectDetectedVector[j].upperPosition != false)))
+	//		{
+	//			int widthStart = ObjectDetectedVector[j].region.x;
+	//			int widthEnd = ObjectDetectedVector[j].region.x + ObjectDetectedVector[i].region.width;
+	//			while (widthStart<widthEnd)
+	//			{
+	//				if (ObjectDetectedVector[i].region.contains(CvPoint(widthStart, ObjectDetectedVector[i].centroid.y)))
+	//				{
+	//					ObjectDetectedVector[j].upperPosition = false;
+	//					break;
+	//				}
+	//				widthStart++;
+	//			}
+	//		}
+	//	}
+	//}
 
 	for (vector<ObjectDetected>::iterator it = ObjectDetectedVector.begin(); it != ObjectDetectedVector.end();)
 	{
@@ -140,18 +140,21 @@ void RightImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, i
 		{
 			if ((i != j) && (ObjectDetectedVector[i].isMatched == false) && (ObjectDetectedVector[j].isMatched == false))
 			{
-				// i is on left and  j is on right
-				const double carLightDistanse = ObjectDetectedVector[j].centroid.x - ObjectDetectedVector[i].centroid.x;
-				const double carLeftingDistanse = ObjectDetectedVector[i].centroid.x + carLightDistanse / 2;
-				const double carLightheightDiffY = ObjectDetectedVector[j].centroid.y - ObjectDetectedVector[i].centroid.y;
-				if ((carLightheightDiffY < 5 &&
+				// i is on right and  j is on left
+				const double carLightDistanse = ObjectDetectedVector[i].centroid.x - ObjectDetectedVector[j].centroid.x;
+				const double carLeftingDistanse = ObjectDetectedVector[j].centroid.x + carLightDistanse / 2;
+				const double carLightheightDiffY = abs(ObjectDetectedVector[i].centroid.y - ObjectDetectedVector[j].centroid.y);
+				if ((carLightheightDiffY < 5 /*&&
 					isCarLightHeightDiffYCorrect(carLightheightDiffY, carLeftingDistanse) &&
 					(-0.0005*pow(carLightDistanse, 3) + 0.1379*pow(carLightDistanse, 2) - 14.055*carLightDistanse + 679.14 <= carLeftingDistanse)
-					&& (-0.0301*pow(carLightDistanse, 2) + 0.8564*carLightDistanse + 575.29 >= carLeftingDistanse)))
+					&& (-0.0301*pow(carLightDistanse, 2) + 0.8564*carLightDistanse + 575.29 >= carLeftingDistanse)*/))
 				{
 					ObjectDetectedVector[i].isMatched = true;
 					ObjectDetectedVector[j].isMatched = true;
-					Rect2d carLightRect = Rect2d(ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.y, (ObjectDetectedVector[j].region.x + ObjectDetectedVector[j].region.width) - ObjectDetectedVector[i].region.x, ObjectDetectedVector[j].region.height);
+					Rect2d carLightRect = Rect2d(ObjectDetectedVector[j].region.x, 
+												 ObjectDetectedVector[j].region.y, 
+												(ObjectDetectedVector[i].region.x + ObjectDetectedVector[i].region.width) - ObjectDetectedVector[j].region.x, 
+												 ObjectDetectedVector[i].region.height);
 
 # ifdef ENABLE_TRACKER
 
@@ -205,7 +208,7 @@ void RightImageProcessor::detectLight(Mat& srcImg, Mat binaryImg, int offsetX, i
 	fp.close();
 }
 
-int RightImageProcessor::thresholdValue(Mat& src)
+int LeftImageProcessor::thresholdValue(Mat& src)
 {
 	int* grayLevel = new int[256];
 	int sumOfGrayLevel = 0;
@@ -236,7 +239,7 @@ int RightImageProcessor::thresholdValue(Mat& src)
 	}
 }
 
-void RightImageProcessor::extractEfficientImage(Mat& src)
+void LeftImageProcessor::extractEfficientImage(Mat& src)
 {
 	for (unsigned int col = src.cols / 3; col < src.cols; col++)//¼e
 	{
@@ -249,7 +252,7 @@ void RightImageProcessor::extractEfficientImage(Mat& src)
 }
 
 
-bool RightImageProcessor::isCarLightHeightDiffYCorrect(int diffY, int distance)
+bool LeftImageProcessor::isCarLightHeightDiffYCorrect(int diffY, int distance)
 {
 	switch (diffY)
 	{

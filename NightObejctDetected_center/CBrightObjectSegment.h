@@ -30,7 +30,7 @@ public:
 		}
 	};
 
-	void getBinaryImage(Mat grayscale_image);
+	void getBinaryImage(Mat grayscale_image, int frmaePos = -1, int buffer = 0);
 	ThresholdSet GetThresholdSet();
 
 protected:

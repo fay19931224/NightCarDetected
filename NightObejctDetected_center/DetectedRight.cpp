@@ -1,7 +1,7 @@
 #include "DetectedRight.h"
 DetectedRight::DetectedRight(string path) :DetectedPosition(path)
 {
-	position= Rect(0, videoSize.height / 2, videoSize.width / 2, videoSize.height / 2);
+	position= Rect(videoSize.width / 2, videoSize.height / 2, videoSize.width / 2, videoSize.height / 2);
 }
 
 DetectedRight::~DetectedRight()
@@ -11,6 +11,11 @@ DetectedRight::~DetectedRight()
 void DetectedRight::SetImageProcessor(ImageProcessor *imageProcessor)
 {
 	processor = imageProcessor;
+}
+
+Mat DetectedRight::getResult()
+{
+	return src;
 }
 
 
@@ -29,12 +34,12 @@ void DetectedRight::run()
 			break;
 		}
 		//Dividing the video to left and right part and changing image from color to gray		
-		Src = src(position);
-		cvtColor(Src, Gray, CV_BGR2GRAY);
+		src = src(position);
+		cvtColor(src, Gray, CV_BGR2GRAY);
 
 		//right part
 		Rect ROI = Rect(0, Gray.rows * 28 / 100, Gray.cols * 17 / 20, Gray.rows * 5 / 12);
-		rectangle(Src, ROI, Scalar(0, 255, 255), 1, 8, 0); // draw ROI
+		rectangle(src, ROI, Scalar(0, 255, 255), 1, 8, 0); // draw ROI
 		GrayRect = Gray(ROI);
 		GrayRectTemp = GrayRect.clone();
 
@@ -43,7 +48,7 @@ void DetectedRight::run()
 		const int FrontRectWidth = Gray.cols * 2 / 5;
 		const int FrontRectHeight = Gray.rows * 5 / 12;
 		Rect FrontRect = Rect(FrontRectX, FrontRectY, FrontRectWidth, FrontRectHeight);
-		rectangle(Src, FrontRect, Scalar(0, 0, 255), 1, 8, 0); // draw Front ROI
+		rectangle(src, FrontRect, Scalar(0, 0, 255), 1, 8, 0); // draw Front ROI
 
 		//imageProcessor.extractEfficientImage(rightGrayRectTemp);
 
@@ -61,13 +66,13 @@ void DetectedRight::run()
 		brightObjectSegment2.getBinaryImage(Middle);
 
 		processor->removeNoice(GrayRectTemp, 5, 5, 7, 7);
-		processor->detectLight(Src, GrayRectTemp, 0, Gray.rows * 28 / 100, ROIs);
+		processor->detectLight(src, GrayRectTemp, 0, Gray.rows * 28 / 100, ROIs);
 
-		imshow("Right Result", Src);
+		imshow("Right Result", src);
 		imshow("Right Binary Result", Front);
 		imshow("Right Binary Result2", Middle);
 
-		videoWriter << Src;
+		videoWriter << src;
 		switch (1) {
 		case 1:
 			waitKey(1);
